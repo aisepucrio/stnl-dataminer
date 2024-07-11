@@ -1,0 +1,14 @@
+Babel==2.15.0
+certifi==2024.7.4
+charset-normalizer==3.3.2
+colorama==0.4.6
+customtkinter==5.2.2
+darkdetect==0.8.0
+idna==3.7
+packaging==24.1
+python-dotenv==1.0.1
+requests==2.32.3
+tkcalendar==1.6.1
+tqdm==4.66.4
+urllib3==2.2.2
+psycopg2
