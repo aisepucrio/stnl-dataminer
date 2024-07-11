@@ -2,7 +2,7 @@ import customtkinter as ctk
 from tkcalendar import DateEntry
 from controller.controller_jira import JiraController
 
-class DataMinerApp(ctk.CTk):
+class JiraDataMinerApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 

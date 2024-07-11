@@ -1,8 +1,8 @@
 import customtkinter as ctk
-from view.view_jira import DataMinerApp
+from view.view_jira import JiraDataMinerApp
 
 if __name__ == "__main__":
-    app = DataMinerApp()
+    app = JiraDataMinerApp()
     app.mainloop()
 
  
