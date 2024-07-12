@@ -1,4 +1,4 @@
-from view.view import DataMinerApp
+from view.view_menu import DataMinerApp
 
 if __name__ == "__main__":
     app = DataMinerApp()
