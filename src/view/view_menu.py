@@ -1,10 +1,8 @@
 import tkinter as tk
-from tkinter import messagebox
 from tkinter import font as tkfont
 from PIL import Image, ImageTk, ImageDraw
-from view.view_gh import GitHubRepoInfoApp
 from view.view_jira import JiraDataMinerApp
-from view.view_settings import SettingsApp
+from view.view_gh import GitHubRepoInfoApp 
 
 class DataMinerApp:
     def __init__(self, root):
@@ -19,6 +17,8 @@ class DataMinerApp:
 
         self.bree_serif = tkfont.Font(family="Bree Serif", size=30, weight="bold")
         self.bree_serif_small = tkfont.Font(family="Bree Serif", size=15, weight="bold")
+
+        self.image_refs = {}
 
         self.create_widgets()
 
@@ -62,7 +62,10 @@ class DataMinerApp:
         canvas.bind("<Enter>", lambda e: self.zoom_in(e, canvas, image, label_text))
         canvas.bind("<Leave>", lambda e: self.zoom_out(e, canvas, photo))
 
-        canvas.circle_photo = circle_photo  # Keep a reference to the circle image to avoid garbage collection
+        self.image_refs[f"{label_text}_circle"] = circle_photo
+        self.image_refs[label_text] = photo
+
+        canvas.circle_photo = circle_photo
 
     def create_circle_image(self, diameter, color, bg_color):
         image = Image.new('RGBA', (diameter, diameter), bg_color)
@@ -94,29 +97,30 @@ class DataMinerApp:
             settings_button.bind("<Enter>", lambda e: settings_button.config(image=settings_photo_zoomed))
             settings_button.bind("<Leave>", lambda e: settings_button.config(image=settings_photo))
 
-    def on_jira_click(self):
-        self.root.withdraw()  # Esconde a janela principal
-        jira_app = JiraDataMinerApp()
-        jira_app.mainloop()
-        self.root.deiconify()  # Mostra a janela principal novamente quando o app JIRA é fechado
+            self.image_refs['settings'] = settings_photo
+            self.image_refs['settings_zoomed'] = settings_photo_zoomed
 
-    def on_github_click(self):
-        self.root.withdraw()  # Esconde a janela principal
-        gh_app = GitHubRepoInfoApp()
-        gh_app.run()  # Chama o método run, que executa mainloop
-        self.root.deiconify()  # Mostra a janela principal novamente quando o app GitHub é fechado
+    def on_jira_click(self): 
+        self.root.withdraw()  
+        jira_app = JiraDataMinerApp(self.root)
+        jira_app.run()
+
+    def on_github_click(self): 
+        self.root.withdraw()  
+        gh_app = GitHubRepoInfoApp(self.root)
+        gh_app.run()  
 
     def on_settings_click(self):
+        from view.view_settings import SettingsApp
         settings_app = SettingsApp()
         settings_app.mainloop()
-
 
     def zoom_in(self, event, widget, image, label_text=None):
         if isinstance(widget, tk.Canvas):
             zoomed_image = image.resize((int(image.width * 1.1), int(image.height * 1.1)), Image.LANCZOS)
             zoomed_photo = ImageTk.PhotoImage(zoomed_image)
             widget.delete("all")
-            widget.create_image(125, 125, image=widget.circle_photo)  # Redraw the circle image
+            widget.create_image(125, 125, image=widget.circle_photo)
             widget.create_image(125, 125, image=zoomed_photo)
             widget.image = zoomed_photo
 
@@ -136,7 +140,7 @@ class DataMinerApp:
     def zoom_out(self, event, widget, image):
         if isinstance(widget, tk.Canvas):
             widget.delete("all")
-            widget.create_image(125, 125, image=widget.circle_photo)  # Redraw the circle image
+            widget.create_image(125, 125, image=widget.circle_photo)
             widget.create_image(125, 125, image=image)
             if hasattr(widget, 'label'):
                 widget.label.destroy()

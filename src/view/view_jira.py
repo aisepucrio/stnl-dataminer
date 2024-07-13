@@ -1,16 +1,22 @@
 import customtkinter as ctk
 from tkcalendar import DateEntry
+from PIL import Image, ImageTk
 from controller.controller_jira import JiraController
 
 class JiraDataMinerApp(ctk.CTk):
-    def __init__(self):
+    def __init__(self, menu_app):
         super().__init__()
 
+        self.menu_app = menu_app
         self.controller = JiraController(self)
 
         self.title("Jira Data Miner")
         self.geometry("550x700")
         self.configure(bg="black")
+
+        # Adicionar botão de voltar
+        self.back_button = ctk.CTkButton(self, text="Back", command=self.back_to_menu)
+        self.back_button.pack(pady=12, padx=10, anchor='nw')
 
         self.url_label = ctk.CTkLabel(self, text="Project or Repository URL:")
         self.url_label.pack(pady=10)
@@ -32,10 +38,12 @@ class JiraDataMinerApp(ctk.CTk):
 
         self.mining_options_frame = None
 
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
-
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
+
+    def back_to_menu(self):
+        self.menu_app.deiconify()
+        self.destroy()
 
     def show_jira_options(self, jira_domain, project_key):
         if self.mining_options_frame:
@@ -84,6 +92,9 @@ class JiraDataMinerApp(ctk.CTk):
 
         self.stop_button = ctk.CTkButton(self.mining_options_frame, text="Stop", fg_color="red", command=self.controller.stop_mining)
         self.stop_button.pack(pady=10)
+    
+    def run(self):
+        self.mainloop()
 
-    def on_closing(self):
-        self.destroy()
+
+

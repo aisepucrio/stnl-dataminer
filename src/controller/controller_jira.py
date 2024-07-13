@@ -10,7 +10,6 @@ from model.api_jira import (
     API_TOKEN
 )
 from tkinter import messagebox
-
 class JiraController:
     def __init__(self, view):
         self.view = view

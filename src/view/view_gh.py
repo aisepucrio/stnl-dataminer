@@ -1,17 +1,26 @@
 import customtkinter
-from tkcalendar import DateEntry
 import threading
-from controller.controller_gh import GitHubController
+from tkcalendar import DateEntry
+from PIL import Image, ImageTk
+from controller.controller_gh import GitHubController  
 
-class GitHubRepoInfoApp:
-    def __init__(self):
+class GitHubRepoInfoApp(customtkinter.CTk):
+    def __init__(self, menu_app):
+        super().__init__()
+
+        self.menu_app = menu_app
         self.controller = GitHubController()
+
         customtkinter.set_appearance_mode('dark')
         customtkinter.set_default_color_theme("dark-blue")
 
         self.root = customtkinter.CTk()
         self.root.geometry("450x900")
         self.root.title("GitHub Repo Info")
+
+        # Adicionar botão de voltar
+        self.back_button = customtkinter.CTkButton(self.root, text="Back", command=self.back_to_menu)
+        self.back_button.pack(pady=12, padx=10, anchor='nw')
 
         default_font = customtkinter.CTkFont(family="Segoe UI", size=12)
 
@@ -67,6 +76,10 @@ class GitHubRepoInfoApp:
 
         self.result_label = customtkinter.CTkLabel(master=self.frame, text="", font=default_font)
         self.result_label.pack(pady=12, padx=10)
+
+    def back_to_menu(self):
+        self.menu_app.deiconify()
+        self.root.destroy()  # Ensure the current window is destroyed
 
     def run(self):
         self.root.mainloop()
