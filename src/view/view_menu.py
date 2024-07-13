@@ -106,6 +106,8 @@ class DataMinerApp:
             close_image = Image.open("view/icons/close.png")
             close_image = close_image.resize((20, 20), Image.LANCZOS)
             close_photo = ImageTk.PhotoImage(close_image)
+            close_image_zoomed = close_image.resize((24, 24), Image.LANCZOS)
+            close_photo_zoomed = ImageTk.PhotoImage(close_image_zoomed)
         except Exception as e:
             print(f"Error loading close image: {e}")
             close_photo = None
@@ -113,7 +115,10 @@ class DataMinerApp:
         if close_photo:
             close_button = tk.Button(self.root, image=close_photo, command=self.root.quit, bg='#1e1e1e', bd=0, highlightthickness=0, activebackground='#1e1e1e')
             close_button.place(relx=0.98, rely=0.02, anchor='ne')
+            close_button.bind("<Enter>", lambda e: close_button.config(image=close_photo_zoomed))
+            close_button.bind("<Leave>", lambda e: close_button.config(image=close_photo))
             self.image_refs['close'] = close_photo
+            self.image_refs['close_zoomed'] = close_photo_zoomed
 
     def on_jira_click(self): 
         self.root.withdraw()  
