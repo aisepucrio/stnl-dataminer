@@ -10,10 +10,17 @@ from model.api_jira import (
     API_TOKEN
 )
 from tkinter import messagebox
+from dotenv import load_dotenv
+import os
+
 class JiraController:
     def __init__(self, view):
         self.view = view
         self.stop_collecting = False
+        load_dotenv()
+
+    def get_save_path(self):
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
     def confirm_selection(self):
         url = self.view.url_entry.get().strip()
@@ -71,8 +78,9 @@ class JiraController:
             all_issues[task_type] = tasks
             print(f"Collected {len(tasks)} {task_type}(s)")
 
-        save_to_json(all_issues, project_key)
-        messagebox.showinfo("Success", f"Data has been successfully mined and saved to {project_key.lower()}_issues.json")
+        save_path = self.get_save_path()
+        save_to_json(all_issues, os.path.join(save_path, f'{project_key.lower()}_issues.json'))
+        messagebox.showinfo("Success", f"Data has been successfully mined and saved to {os.path.join(save_path, project_key.lower() + '_issues.json')}")
 
     def mine_data_github(self, repo_url):
         messagebox.showinfo("Info", "GitHub data mining is not yet implemented.")

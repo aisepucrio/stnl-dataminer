@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import messagebox, Toplevel, Listbox
+from tkinter import messagebox, Toplevel, Listbox, filedialog
 from dotenv import load_dotenv, set_key, dotenv_values
 import os
 
@@ -25,7 +25,7 @@ class SettingsApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Settings")
-        self.geometry("705x245")
+        self.geometry("705x295")  # Aumenta a altura para o novo campo
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
 
@@ -40,7 +40,7 @@ class SettingsApp(ctk.CTk):
     def load_env(self):
         if not os.path.exists(self.env_file):
             with open(self.env_file, 'w') as f:
-                f.write('TOKENS=\nUSERNAMES=\nEMAIL=\nAPI_TOKEN=\n')
+                f.write('TOKENS=\nUSERNAMES=\nEMAIL=\nAPI_TOKEN=\nSAVE_PATH=\n')
         
         load_dotenv(self.env_file)
         
@@ -49,12 +49,14 @@ class SettingsApp(ctk.CTk):
         self.usernames = env_values.get('USERNAMES', '').split(',')
         self.emails = env_values.get('EMAIL', '').split(',')
         self.api_tokens = env_values.get('API_TOKEN', '').split(',')
+        self.save_path = env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
         # Ensure all required keys are present in the .env file
         self.ensure_env_key('TOKENS')
         self.ensure_env_key('USERNAMES')
         self.ensure_env_key('EMAIL')
         self.ensure_env_key('API_TOKEN')
+        self.ensure_env_key('SAVE_PATH')
 
     def ensure_env_key(self, key):
         if key not in dotenv_values(self.env_file):
@@ -113,15 +115,28 @@ class SettingsApp(ctk.CTk):
         self.api_token_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_api_token_window, fg_color=self.button_color)
         self.api_token_edit_button.grid(row=3, column=3, padx=10, pady=10)
 
+        # Save Path
+        self.save_path_label = ctk.CTkLabel(self, text="Save Path:")
+        self.save_path_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
+
+        self.save_path_entry = ctk.CTkEntry(self, width=200)
+        self.save_path_entry.insert(0, self.save_path)
+        self.save_path_entry.grid(row=4, column=1, padx=10, pady=10)
+
+        self.save_path_button = ctk.CTkButton(self, text="Browse", command=self.browse_save_path, fg_color=self.button_color)
+        self.save_path_button.grid(row=4, column=2, padx=10, pady=10)
+
         # Max Workers
         self.max_workers_label = ctk.CTkLabel(self, text="Number of Max Workers:")
-        self.max_workers_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
+        self.max_workers_label.grid(row=5, column=0, padx=10, pady=10, sticky="w")
 
         self.max_workers_entry = ctk.CTkEntry(self, width=200)
-        self.max_workers_entry.grid(row=4, column=1, padx=10, pady=10)
+        self.max_workers_entry.grid(row=5, column=1, padx=10, pady=10)
 
     def update_env_file(self, key, value):
         set_key(self.env_file, key, value)
+        if key == 'SAVE_PATH':
+            self.save_path = value  # Atualiza o save_path dinamicamente
 
     def add_github_token(self):
         token = self.github_token_entry.get()
@@ -170,6 +185,13 @@ class SettingsApp(ctk.CTk):
 
     def edit_api_token_window(self):
         self.open_listbox_window("Edit API Tokens", self.api_tokens, self.add_api_token_to_listbox)
+
+    def browse_save_path(self):
+        path = filedialog.askdirectory()
+        if path:
+            self.save_path_entry.delete(0, "end")
+            self.save_path_entry.insert(0, path)
+            self.update_env_file('SAVE_PATH', path)
 
     def open_listbox_window(self, title, items, add_command):
         window = Toplevel(self)
@@ -257,6 +279,3 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
 
-if __name__ == "__main__":
-    app = SettingsApp()
-    app.mainloop()

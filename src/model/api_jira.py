@@ -8,6 +8,7 @@ load_dotenv()
 
 EMAIL = os.getenv('EMAIL')
 API_TOKEN = os.getenv('API_TOKEN')
+SAVE_PATH = os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
 def extract_jira_domain_and_key(url):
     parsed_url = urlparse(url)
@@ -86,7 +87,7 @@ def replace_ids(issues, custom_field_mapping):
                 fields[field_name] = fields.pop(field_id)
     return issues
 
-def save_to_json(data, project_key):
-    filename=f'{project_key.lower()}_issues.json'
-    with open(filename, 'w', encoding='utf-8') as f:
+def save_to_json(data, filename):
+    full_path = os.path.join(SAVE_PATH, filename)
+    with open(full_path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)

@@ -3,6 +3,11 @@ from urllib.parse import urlparse, urlencode
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+SAVE_PATH = os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
 class GitHubAPI:
     def __init__(self):
@@ -15,9 +20,6 @@ class GitHubAPI:
         self.rotate_token()
 
     def load_tokens(self):
-        from dotenv import load_dotenv
-        import os
-        load_dotenv()
         try:
             self.tokens = os.getenv('TOKENS').split(',')
         except Exception as e:
@@ -233,6 +235,6 @@ class GitHubAPI:
         return essential_branches
 
     def save_to_json(self, data, filename):
-        with open(filename, 'w', encoding='utf-8') as f:
+        full_path = os.path.join(SAVE_PATH, filename)
+        with open(full_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-

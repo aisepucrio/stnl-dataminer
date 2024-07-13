@@ -1,11 +1,17 @@
 from model.api_gh import GitHubAPI
 from database.database_gh import Database
+from dotenv import load_dotenv
+import os
 
 class GitHubController:
     def __init__(self):
         self.api = GitHubAPI()
         self.db = Database()
         self.stop_process_flag = False
+        load_dotenv()
+
+    def get_save_path(self):
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
     def collect_data(self, repo_url, start_date, end_date, options, max_workers, update_progress_callback, progress_step):
         repo_name = self.api.get_repo_name(repo_url)
@@ -36,7 +42,9 @@ class GitHubController:
             self.db.insert_branches(repo_name, data['branches'])
             update_progress_callback(progress_step)
 
-        self.api.save_to_json(data, f"{repo_name.replace('/', '_').replace('-', '_')}.json")
+        save_path = self.get_save_path()
+        file_path = os.path.join(save_path, f"{repo_name.replace('/', '_').replace('-', '_')}.json")
+        self.api.save_to_json(data, file_path)
         
         return data
 
