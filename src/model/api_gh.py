@@ -18,8 +18,16 @@ class GitHubAPI:
         from dotenv import load_dotenv
         import os
         load_dotenv()
-        self.tokens = os.getenv('TOKENS').split(',')
-        self.usernames = os.getenv('USERNAMES').split(',')
+        try:
+            self.tokens = os.getenv('TOKENS').split(',')
+        except Exception as e:
+            print('No GitHub tokens found. Please add them to the .env')
+            exit(1)
+        try:
+            self.usernames = os.getenv('USERNAMES').split(',')
+        except Exception as e:
+            print('No GitHub usernames found. Please add them to the .env')
+            exit(1)
 
     def rotate_token(self):
         self.current_token_index = (self.current_token_index + 1) % len(self.tokens)

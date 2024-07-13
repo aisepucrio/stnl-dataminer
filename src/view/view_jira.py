@@ -32,6 +32,11 @@ class JiraDataMinerApp(ctk.CTk):
 
         self.mining_options_frame = None
 
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        ctk.set_appearance_mode('dark')
+        ctk.set_default_color_theme("dark-blue")
+
     def show_jira_options(self, jira_domain, project_key):
         if self.mining_options_frame:
             self.mining_options_frame.destroy()
@@ -79,3 +84,6 @@ class JiraDataMinerApp(ctk.CTk):
 
         self.stop_button = ctk.CTkButton(self.mining_options_frame, text="Stop", fg_color="red", command=self.controller.stop_mining)
         self.stop_button.pack(pady=10)
+
+    def on_closing(self):
+        self.destroy()

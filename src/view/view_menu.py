@@ -2,6 +2,9 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import font as tkfont
 from PIL import Image, ImageTk, ImageDraw
+from view.view_gh import GitHubRepoInfoApp
+from view.view_jira import JiraDataMinerApp
+from view.view_settings import SettingsApp
 
 class DataMinerApp:
     def __init__(self, root):
@@ -47,7 +50,7 @@ class DataMinerApp:
             print(f"Error loading {label_text} image: {e}")
             photo = None
 
-        circle_image = self.create_circle_image(240, (60, 60, 60), (0, 0, 0, 0))
+        circle_image = self.create_circle_image(200, (60, 60, 60), (0, 0, 0, 0))
         circle_photo = ImageTk.PhotoImage(circle_image)
 
         canvas = tk.Canvas(frame, width=250, height=250, bg='#1e1e1e', highlightthickness=0)
@@ -92,13 +95,21 @@ class DataMinerApp:
             settings_button.bind("<Leave>", lambda e: settings_button.config(image=settings_photo))
 
     def on_jira_click(self):
-        messagebox.showinfo("Plataforma Selecionada", "Você selecionou JIRA")
+        self.root.withdraw()  # Esconde a janela principal
+        jira_app = JiraDataMinerApp()
+        jira_app.mainloop()
+        self.root.deiconify()  # Mostra a janela principal novamente quando o app JIRA é fechado
 
     def on_github_click(self):
-        messagebox.showinfo("Plataforma Selecionada", "Você selecionou GitHub")
+        self.root.withdraw()  # Esconde a janela principal
+        gh_app = GitHubRepoInfoApp()
+        gh_app.run()  # Chama o método run, que executa mainloop
+        self.root.deiconify()  # Mostra a janela principal novamente quando o app GitHub é fechado
 
     def on_settings_click(self):
-        messagebox.showinfo("Configurações", "Abrir configurações")
+        settings_app = SettingsApp()
+        settings_app.mainloop()
+
 
     def zoom_in(self, event, widget, image, label_text=None):
         if isinstance(widget, tk.Canvas):
