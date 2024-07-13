@@ -15,12 +15,16 @@ class GitHubRepoInfoApp(customtkinter.CTk):
         customtkinter.set_default_color_theme("dark-blue")
 
         self.root = customtkinter.CTk()
-        self.root.geometry("450x900")
+        self.root.geometry("450x750")
         self.root.title("GitHub Repo Info")
 
         # Adicionar botão de voltar
-        self.back_button = customtkinter.CTkButton(self.root, text="Back", command=self.back_to_menu)
-        self.back_button.pack(pady=12, padx=10, anchor='nw')
+        self.back_button = customtkinter.CTkButton(
+            self.root, text="← Back", command=self.back_to_menu, 
+            corner_radius=8, fg_color="#2e2e2e", hover_color="#4a4a4a",
+            text_color="#ffffff", width=80, height=32, font=("Segoe UI", 12, "bold")
+        )
+        self.back_button.pack(pady=12, padx=10, anchor='nw', side='top')
 
         default_font = customtkinter.CTkFont(family="Segoe UI", size=12)
 

@@ -40,6 +40,7 @@ class DataMinerApp:
         self.create_platform_button(frame, "view/icons/gh_icon_black.png", "GitHub", 0, 1, self.on_github_click)
 
         self.create_settings_button()
+        self.create_close_button()
 
     def create_platform_button(self, frame, image_path, label_text, row, column, click_command):
         try:
@@ -99,6 +100,20 @@ class DataMinerApp:
 
             self.image_refs['settings'] = settings_photo
             self.image_refs['settings_zoomed'] = settings_photo_zoomed
+
+    def create_close_button(self):
+        try:
+            close_image = Image.open("view/icons/close.png")
+            close_image = close_image.resize((20, 20), Image.LANCZOS)
+            close_photo = ImageTk.PhotoImage(close_image)
+        except Exception as e:
+            print(f"Error loading close image: {e}")
+            close_photo = None
+
+        if close_photo:
+            close_button = tk.Button(self.root, image=close_photo, command=self.root.quit, bg='#1e1e1e', bd=0, highlightthickness=0, activebackground='#1e1e1e')
+            close_button.place(relx=0.98, rely=0.02, anchor='ne')
+            self.image_refs['close'] = close_photo
 
     def on_jira_click(self): 
         self.root.withdraw()  

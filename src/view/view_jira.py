@@ -15,7 +15,11 @@ class JiraDataMinerApp(ctk.CTk):
         self.configure(bg="black")
 
         # Adicionar botão de voltar
-        self.back_button = ctk.CTkButton(self, text="Back", command=self.back_to_menu)
+        self.back_button = ctk.CTkButton(
+            self, text="← Back", command=self.back_to_menu,
+            corner_radius=8, fg_color="#2e2e2e", hover_color="#4a4a4a",
+            text_color="#ffffff", width=80, height=32, font=("Segoe UI", 12, "bold")
+        )
         self.back_button.pack(pady=12, padx=10, anchor='nw')
 
         self.url_label = ctk.CTkLabel(self, text="Project or Repository URL:")
