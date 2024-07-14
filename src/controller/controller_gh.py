@@ -3,17 +3,24 @@ from database.database_gh import Database
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 class GitHubController:
     def __init__(self):
         self.api = GitHubAPI()
         self.db = Database()
         self.stop_process_flag = False
+        self.max_workers_default = int(os.getenv('MAX_WORKERS', '12'))
         load_dotenv()
 
     def get_save_path(self):
+        load_dotenv()  # Recarregar as variáveis de ambiente
         return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
-    def collect_data(self, repo_url, start_date, end_date, options, max_workers, update_progress_callback, progress_step):
+    def collect_data(self, repo_url, start_date, end_date, options, max_workers=None, update_progress_callback=None, progress_step=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         repo_name = self.api.get_repo_name(repo_url)
         self.db.create_schema_and_tables(repo_name)
         

@@ -20,6 +20,7 @@ class JiraController:
         load_dotenv()
 
     def get_save_path(self):
+        load_dotenv()  # Recarregar as variáveis de ambiente
         return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
     def confirm_selection(self):
@@ -84,4 +85,3 @@ class JiraController:
 
     def mine_data_github(self, repo_url):
         messagebox.showinfo("Info", "GitHub data mining is not yet implemented.")
-

@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-SAVE_PATH = os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
 class GitHubAPI:
     def __init__(self):
@@ -18,6 +17,7 @@ class GitHubAPI:
         self.current_token_index = 0
         self.load_tokens()
         self.rotate_token()
+        self.max_workers_default = int(os.getenv('MAX_WORKERS', '12'))
 
     def load_tokens(self):
         try:
@@ -79,7 +79,10 @@ class GitHubAPI:
                 raise Exception(f'Unexpected error: {str(e)}')
         raise Exception("All tokens have reached the limit.")
 
-    def get_all_pages(self, url, desc, params=None, date_key=None, start_date=None, end_date=None, max_workers=12):
+    def get_all_pages(self, url, desc, params=None, date_key=None, start_date=None, end_date=None, max_workers=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         results = []
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date[:10], '%Y-%m-%d').date()
@@ -141,7 +144,9 @@ class GitHubAPI:
         print("All tokens have reached the limit.")
         return []
 
-    def get_comments_with_initial(self, issue_url, initial_comment, issue_number, max_workers=12):
+    def get_comments_with_initial(self, issue_url, initial_comment, issue_number, max_workers=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
         comments = self.get_all_pages(issue_url, f'Fetching comments for issue/pr #{issue_number}', max_workers=max_workers)
         essential_comments = [{
             'user': initial_comment['user']['login'],
@@ -155,7 +160,10 @@ class GitHubAPI:
         } for comment in comments if 'user' in comment and 'login' in comment['user'] and 'body' in comment and 'created_at' in comment])
         return essential_comments
 
-    def get_commits(self, repo_name, start_date, end_date, max_workers=12):
+    def get_commits(self, repo_name, start_date, end_date, max_workers=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/commits'
         params = {
             'since': f'{start_date}T00:00:01Z',
@@ -171,7 +179,10 @@ class GitHubAPI:
         } for commit in commits if 'sha' in commit and 'commit' in commit and 'message' in commit['commit'] and 'author' in commit['commit'] and 'date' in commit['commit']['author'] and 'name' in commit['commit']['author']]
         return essential_commits
 
-    def get_issues(self, repo_name, start_date, end_date, max_workers=12):
+    def get_issues(self, repo_name, start_date, end_date, max_workers=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/issues'
         params = {
             'since': f'{start_date}T00:00:01Z',
@@ -198,7 +209,10 @@ class GitHubAPI:
                 })
         return essential_issues
 
-    def get_pull_requests(self, repo_name, start_date, end_date, max_workers=12):
+    def get_pull_requests(self, repo_name, start_date, end_date, max_workers=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/pulls'
         params = {
             'since': f'{start_date}T00:00:01Z',
@@ -225,7 +239,10 @@ class GitHubAPI:
                 })
         return essential_pull_requests
 
-    def get_branches(self, repo_name, max_workers=12):
+    def get_branches(self, repo_name, max_workers=None):
+        if max_workers is None:
+            max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/branches'
         branches = self.get_all_pages(url, 'Fetching branches', max_workers=max_workers)
         essential_branches = [{
@@ -235,6 +252,8 @@ class GitHubAPI:
         return essential_branches
 
     def save_to_json(self, data, filename):
-        full_path = os.path.join(SAVE_PATH, filename)
+        load_dotenv()  # Recarregar as variáveis de ambiente
+        save_path = os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
+        full_path = os.path.join(save_path, filename)
         with open(full_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)

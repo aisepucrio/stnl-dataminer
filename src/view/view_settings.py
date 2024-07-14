@@ -40,7 +40,7 @@ class SettingsApp(ctk.CTk):
     def load_env(self):
         if not os.path.exists(self.env_file):
             with open(self.env_file, 'w') as f:
-                f.write('TOKENS=\nUSERNAMES=\nEMAIL=\nAPI_TOKEN=\nSAVE_PATH=\n')
+                f.write('TOKENS=\nUSERNAMES=\nEMAIL=\nAPI_TOKEN=\nSAVE_PATH=\nMAX_WORKERS=1\n')
         
         load_dotenv(self.env_file)
         
@@ -50,6 +50,8 @@ class SettingsApp(ctk.CTk):
         self.emails = env_values.get('EMAIL', '').split(',')
         self.api_tokens = env_values.get('API_TOKEN', '').split(',')
         self.save_path = env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
+        max_workers_str = env_values.get('MAX_WORKERS', '1')
+        self.max_workers = int(max_workers_str) if max_workers_str else 1
 
         # Ensure all required keys are present in the .env file
         self.ensure_env_key('TOKENS')
@@ -57,6 +59,7 @@ class SettingsApp(ctk.CTk):
         self.ensure_env_key('EMAIL')
         self.ensure_env_key('API_TOKEN')
         self.ensure_env_key('SAVE_PATH')
+        self.ensure_env_key('MAX_WORKERS')
 
     def ensure_env_key(self, key):
         if key not in dotenv_values(self.env_file):
@@ -131,7 +134,11 @@ class SettingsApp(ctk.CTk):
         self.max_workers_label.grid(row=5, column=0, padx=10, pady=10, sticky="w")
 
         self.max_workers_entry = ctk.CTkEntry(self, width=200)
+        self.max_workers_entry.insert(0, str(self.max_workers))
         self.max_workers_entry.grid(row=5, column=1, padx=10, pady=10)
+
+        self.max_workers_add_button = ctk.CTkButton(self, text="Add", command=self.add_max_workers, fg_color=self.button_color)
+        self.max_workers_add_button.grid(row=5, column=2, padx=10, pady=10)
 
     def update_env_file(self, key, value):
         set_key(self.env_file, key, value)
@@ -192,6 +199,15 @@ class SettingsApp(ctk.CTk):
             self.save_path_entry.delete(0, "end")
             self.save_path_entry.insert(0, path)
             self.update_env_file('SAVE_PATH', path)
+
+    def add_max_workers(self):
+        max_workers_str = self.max_workers_entry.get()
+        try:
+            max_workers = int(max_workers_str)  # Tenta converter a entrada para int
+            self.update_env_file('MAX_WORKERS', str(max_workers))
+            self.max_workers_entry.delete(0, "end")
+        except ValueError:
+            messagebox.showwarning("Warning", "Please enter a valid integer for Max Workers.")
 
     def open_listbox_window(self, title, items, add_command):
         window = Toplevel(self)
@@ -279,3 +295,6 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
 
+if __name__ == "__main__":
+    app = SettingsApp()
+    app.mainloop()

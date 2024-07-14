@@ -3,6 +3,10 @@ import threading
 from tkcalendar import DateEntry
 from PIL import Image, ImageTk
 from controller.controller_gh import GitHubController  
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class GitHubRepoInfoApp(customtkinter.CTk):
     def __init__(self, menu_app):
@@ -61,13 +65,6 @@ class GitHubRepoInfoApp(customtkinter.CTk):
         self.switch_branches = customtkinter.CTkSwitch(master=self.switch_frame, text="Branches", font=default_font)
         self.switch_branches.pack(pady=5, padx=20, anchor='w')
 
-        self.label_max_workers = customtkinter.CTkLabel(master=self.frame, text="Max Workers", font=default_font)
-        self.label_max_workers.pack(pady=12, padx=10)
-
-        self.combo_max_workers = customtkinter.CTkComboBox(master=self.frame, values=[str(i) for i in range(1, 25)], font=default_font)
-        self.combo_max_workers.set("12")  # Default value
-        self.combo_max_workers.pack(pady=12, padx=10)
-
         self.button = customtkinter.CTkButton(master=self.frame, text="Get Information", command=self.get_information, font=default_font, corner_radius=8)
         self.button.pack(pady=12, padx=10)
 
@@ -92,7 +89,9 @@ class GitHubRepoInfoApp(customtkinter.CTk):
         repo_url = self.entry_url.get()
         start_date = self.entry_start_date.get_date()
         end_date = self.entry_end_date.get_date()
-        max_workers = int(self.combo_max_workers.get())
+        max_workers = self.controller.max_workers_default  # Always use the default from .env
+
+        print(f"Number of workers being used: {max_workers}")
 
         options = {
             'commits': self.switch_commits.get() == 1,
