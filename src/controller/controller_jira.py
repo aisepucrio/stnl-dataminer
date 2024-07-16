@@ -1,14 +1,5 @@
-from model.api_jira import (
-    extract_jira_domain_and_key,
-    identify_platform,
-    search_custom_fields,
-    collect_tasks,
-    remove_null_fields,
-    replace_ids,
-    save_to_json,
-    EMAIL,
-    API_TOKEN
-)
+# controller_jira.py
+from model.api_jira import JiraAPI
 from tkinter import messagebox
 from dotenv import load_dotenv
 import os
@@ -16,6 +7,7 @@ import os
 class JiraController:
     def __init__(self, view):
         self.view = view
+        self.api = JiraAPI()
         self.stop_collecting = False
         load_dotenv()
 
@@ -25,10 +17,10 @@ class JiraController:
 
     def confirm_selection(self):
         url = self.view.url_entry.get().strip()
-        platform = identify_platform(url)
+        platform = self.api.identify_platform(url)
 
         if platform == 'jira':
-            jira_domain, project_key = extract_jira_domain_and_key(url)
+            jira_domain, project_key = self.api.extract_jira_domain_and_key(url)
             self.view.show_jira_options(jira_domain, project_key)
         elif platform == 'github':
             repo_url = url  # Aqui você pode implementar a lógica para extrair o nome do repositório do GitHub
@@ -44,7 +36,6 @@ class JiraController:
         end_date = self.view.end_date_entry.get_date()
         start_date_str = start_date.strftime("%Y-%m-%d")
         end_date_str = end_date.strftime("%Y-%m-%d")
-        auth = (EMAIL, API_TOKEN)
 
         task_types = []
         if self.view.epics_switch.get():
@@ -64,7 +55,7 @@ class JiraController:
             messagebox.showerror("Error", "Please select at least one issue type.")
             return
 
-        custom_field_mapping = search_custom_fields(jira_domain, auth)
+        custom_field_mapping = self.api.search_custom_fields(jira_domain)
 
         all_issues = {}
         for task_type in task_types:
@@ -73,15 +64,12 @@ class JiraController:
                 messagebox.showinfo("Stopped", "Data collection was stopped by the user.")
                 return
 
-            tasks = collect_tasks(jira_domain, project_key, task_type, auth, start_date_str, end_date_str, lambda: self.stop_collecting)
-            tasks = remove_null_fields(tasks)
-            tasks = replace_ids(tasks, custom_field_mapping)
+            tasks = self.api.collect_tasks(jira_domain, project_key, task_type, start_date_str, end_date_str, lambda: self.stop_collecting)
+            tasks = self.api.remove_null_fields(tasks)
+            tasks = self.api.replace_ids(tasks, custom_field_mapping)
             all_issues[task_type] = tasks
             print(f"Collected {len(tasks)} {task_type}(s)")
 
         save_path = self.get_save_path()
-        save_to_json(all_issues, os.path.join(save_path, f'{project_key.lower()}_issues.json'))
+        self.api.save_to_json(all_issues, os.path.join(save_path, f'{project_key.lower()}_issues.json'))
         messagebox.showinfo("Success", f"Data has been successfully mined and saved to {os.path.join(save_path, project_key.lower() + '_issues.json')}")
-
-    def mine_data_github(self, repo_url):
-        messagebox.showinfo("Info", "GitHub data mining is not yet implemented.")

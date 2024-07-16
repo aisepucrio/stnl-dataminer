@@ -1,3 +1,4 @@
+# view_jira.py
 import customtkinter as ctk
 from tkcalendar import DateEntry
 from PIL import Image, ImageTk
@@ -99,6 +100,3 @@ class JiraDataMinerApp(ctk.CTk):
     
     def run(self):
         self.mainloop()
-
-
-
