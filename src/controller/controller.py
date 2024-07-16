@@ -1,5 +1,5 @@
 from model.api import GitHubAPI, JiraAPI
-from database.database_gh import Database
+from database.database import Database
 from dotenv import load_dotenv
 from tkinter import messagebox
 import os

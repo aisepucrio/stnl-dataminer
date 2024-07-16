@@ -9,8 +9,29 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-class JiraAPI:
+class BaseAPI:
     def __init__(self):
+        load_dotenv()
+
+    def get_save_path(self):
+        load_dotenv()
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
+
+    def save_to_json(self, data, filename):
+        save_path = self.get_save_path()
+        full_path = os.path.join(save_path, filename)
+        with open(full_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    
+    def handle_rate_limit(self, response):
+        rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+        if rate_limit_remaining < 100:
+            self.rotate_token()
+        return rate_limit_remaining
+
+class JiraAPI(BaseAPI):
+    def __init__(self):
+        super().__init__()
         self.email = os.getenv('EMAIL')
         self.api_token = os.getenv('API_TOKEN')
 
@@ -93,14 +114,9 @@ class JiraAPI:
                     fields[field_name] = fields.pop(field_id)
         return issues
 
-    def save_to_json(self, data, filename):
-        save_path = os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
-        full_path = os.path.join(save_path, filename)
-        with open(full_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-
-class GitHubAPI:
+class GitHubAPI(BaseAPI):
     def __init__(self):
+        super().__init__()
         self.headers = {'Accept': 'application/vnd.github.v3+json'}
         self.auth = None
         self.tokens = None
@@ -146,10 +162,9 @@ class GitHubAPI:
                 response = requests.get(f"{url}?per_page=1", headers=self.headers, auth=self.auth, params=params)
                 response.raise_for_status()
                 
-                rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+                rate_limit_remaining = self.handle_rate_limit(response)
                 if rate_limit_remaining < 100:
                     print(f"Token limit is low ({rate_limit_remaining} remaining). Rotating token...")
-                    self.rotate_token()
                     attempts += 1
                 else:
                     if 'Link' in response.headers:
@@ -216,9 +231,8 @@ class GitHubAPI:
                 response = requests.get(url, headers=self.headers, auth=self.auth)
                 response.raise_for_status()
 
-                rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
+                rate_limit_remaining = self.handle_rate_limit(response)
                 if rate_limit_remaining < 100:
-                    self.rotate_token()
                     attempts += 1
                 else:
                     data = response.json()
@@ -341,9 +355,3 @@ class GitHubAPI:
             'sha': branch['commit']['sha']
         } for branch in branches if 'name' in branch and 'commit' in branch and 'sha' in branch['commit']]
         return essential_branches
-
-    def save_to_json(self, data, filename):
-        save_path = os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
-        full_path = os.path.join(save_path, filename)
-        with open(full_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
