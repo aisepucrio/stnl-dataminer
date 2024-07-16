@@ -115,8 +115,6 @@ class GitHubRepoInfoApp(customtkinter.CTk):
                 self.result_label.configure(text=message.strip())
             except ValueError as ve:
                 self.result_label.configure(text=str(ve))
-            except Exception as e:
-                self.result_label.configure(text=f"Unexpected error: {str(e)}")
 
         thread = threading.Thread(target=collect_data)
         thread.start()
