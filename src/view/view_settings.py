@@ -1,7 +1,7 @@
 import customtkinter as ctk
+import os
 from tkinter import messagebox, Toplevel, Listbox, filedialog
 from dotenv import load_dotenv, set_key, dotenv_values
-import os
 
 class CTkListbox(ctk.CTkFrame):
     def __init__(self, master=None, **kwargs):

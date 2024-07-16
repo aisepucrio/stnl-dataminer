@@ -2,9 +2,8 @@ import customtkinter
 import threading
 from tkcalendar import DateEntry
 from PIL import Image, ImageTk
-from controller.controller_gh import GitHubController  
+from controller.controller import GitHubController  
 from dotenv import load_dotenv
-import os
 
 load_dotenv()
 
