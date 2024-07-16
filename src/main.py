@@ -1,5 +1,5 @@
 import tkinter as tk
-from view.view_menu import DataMinerApp
+from view.view import DataMinerApp
 
 if __name__ == "__main__":
     root = tk.Tk()
