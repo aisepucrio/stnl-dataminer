@@ -15,7 +15,7 @@ class BaseAPI:
 
     def get_save_path(self):
         load_dotenv()
-        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
 
     def save_to_json(self, data, filename):
         save_path = self.get_save_path()
@@ -41,13 +41,6 @@ class JiraAPI(BaseAPI):
         path_parts = parsed_url.path.split('/')
         project_key = path_parts[path_parts.index('projects') + 1] if 'projects' in path_parts else None
         return domain, project_key
-
-    def identify_platform(self, url):
-        if 'atlassian.net' in url:
-            return 'jira'
-        elif 'github.com' in url:
-            return 'github'
-        return None
 
     def search_custom_fields(self, jira_domain):
         url = f"https://{jira_domain}/rest/api/2/field"
@@ -78,12 +71,13 @@ class JiraAPI(BaseAPI):
                 'maxResults': max_results
             }
             auth = (self.email, self.api_token)
-            response = requests.get(url, params=query, auth=auth)
             try:
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as e:
-                print(f"Error response: {response.text}")
-                raise e
+                response = requests.get(url, params=query, auth=auth)
+            except Exception as e:
+                print(f"Error fetching data from URL: {url} - {str(e)}")
+                break
+            # print(response.json())
+            # break
             issues = response.json()['issues']
             all_issues.extend(issues)
             start_at += max_results

@@ -86,38 +86,12 @@ class JiraController(BaseController):
         self.view = view
         self.api = JiraAPI()
 
-    def confirm_selection(self):
-        url = self.view.url_entry.get().strip()
-        platform = self.api.identify_platform(url)
-
-        if platform == 'jira':
-            jira_domain, project_key = self.api.extract_jira_domain_and_key(url)
-            self.view.show_jira_options(jira_domain, project_key)
-        elif platform == 'github':
-            repo_url = url  # Aqui você pode implementar a lógica para extrair o nome do repositório do GitHub
-            self.view.show_github_options(url)
-        else:
-            messagebox.showerror("Error", "Invalid URL. Please enter a valid Jira or GitHub URL.")
-
-    def mine_data_jira(self, jira_domain, project_key):
+    def mine_data(self, url, start_date, end_date, task_types):
+        jira_domain, project_key = self.api.extract_jira_domain_and_key(url)
         start_date = self.view.start_date_entry.get_date()
         end_date = self.view.end_date_entry.get_date()
         start_date_str = start_date.strftime("%Y-%m-%d")
         end_date_str = end_date.strftime("%Y-%m-%d")
-
-        task_types = []
-        if self.view.epics_switch.get():
-            task_types.append('Epic')
-        if self.view.user_stories_switch.get():
-            task_types.append('Story')
-        if self.view.tasks_switch.get():
-            task_types.append('Task')
-        if self.view.subtasks_switch.get():
-            task_types.append('Sub-task')
-        if self.view.bugs_switch.get():
-            task_types.append('Bug')
-        if self.view.enablers_switch.get():
-            task_types.append('Enabler')
 
         if not task_types:
             messagebox.showerror("Error", "Please select at least one issue type.")
@@ -139,5 +113,5 @@ class JiraController(BaseController):
             print(f"Collected {len(tasks)} {task_type}(s)")
 
         save_path = self.get_save_path()
-        self.save_to_json(all_issues, os.path.join(save_path, f'{project_key.lower()}_issues.json'))
+        self.api.save_to_json(all_issues, os.path.join(save_path, f'{project_key.lower()}_issues.json'))
         messagebox.showinfo("Success", f"Data has been successfully mined and saved to {os.path.join(save_path, project_key.lower() + '_issues.json')}")

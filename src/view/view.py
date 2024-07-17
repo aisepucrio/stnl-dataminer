@@ -44,22 +44,6 @@ class JiraDataMinerApp(ctk.CTk):
         self.end_date_entry = DateEntry(self, width=12, background='darkblue', foreground='white', borderwidth=2)
         self.end_date_entry.pack(pady=10)
 
-        self.load_fields_button = ctk.CTkButton(self, text="Confirm", command=self.controller.confirm_selection)
-        self.load_fields_button.pack(pady=20)
-
-        self.mining_options_frame = None
-
-        ctk.set_appearance_mode('dark')
-        ctk.set_default_color_theme("dark-blue")
-
-    def back_to_menu(self):
-        self.menu_app.deiconify()
-        self.destroy()
-
-    def show_jira_options(self, jira_domain, project_key):
-        if self.mining_options_frame:
-            self.mining_options_frame.destroy()
-
         self.mining_options_frame = ctk.CTkFrame(self)
         self.mining_options_frame.pack(pady=20)
 
@@ -76,33 +60,56 @@ class JiraDataMinerApp(ctk.CTk):
         self.enablers_switch = ctk.CTkSwitch(self.mining_options_frame, text="Enablers")
         self.enablers_switch.pack(pady=5)
 
-        self.mine_button = ctk.CTkButton(self.mining_options_frame, text="Mine Data", command=lambda: self.controller.mine_data_jira(jira_domain, project_key))
+        self.mine_button = ctk.CTkButton(self.mining_options_frame, text="Mine Data", command=self.mine_data)
         self.mine_button.pack(pady=20)
 
-        self.stop_button = ctk.CTkButton(self.mining_options_frame, text="Stop", fg_color="red", command=self.controller.stop_mining)
+        self.stop_button = ctk.CTkButton(self.mining_options_frame, text="Stop", fg_color="red", command=self.stop_process)
         self.stop_button.pack(pady=10)
 
-    def show_github_options(self, repo_url):
-        if self.mining_options_frame:
-            self.mining_options_frame.destroy()
+        #self.mining_options_frame = None
 
-        self.mining_options_frame = ctk.CTkFrame(self)
-        self.mining_options_frame.pack(pady=20)
+        ctk.set_appearance_mode('dark')
+        ctk.set_default_color_theme("dark-blue")
 
-        self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits")
-        self.commits_switch.pack(pady=5)
-        self.issues_switch = ctk.CTkSwitch(self.mining_options_frame, text="Issues")
-        self.issues_switch.pack(pady=5)
-        self.pull_requests_switch = ctk.CTkSwitch(self.mining_options_frame, text="Pull Requests")
-        self.pull_requests_switch.pack(pady=5)
-        self.branches_switch = ctk.CTkSwitch(self.mining_options_frame, text="Branches")
-        self.branches_switch.pack(pady=5)
+    def back_to_menu(self):
+        self.menu_app.deiconify()
+        self.destroy()
 
-        self.mine_button = ctk.CTkButton(self.mining_options_frame, text="Mine Data", command=lambda: self.controller.mine_data_github(repo_url))
-        self.mine_button.pack(pady=20)
+    def mine_data(self):
+        url = self.url_entry.get()
+        start_date = self.start_date_entry.get_date()
+        end_date = self.end_date_entry.get_date()
 
-        self.stop_button = ctk.CTkButton(self.mining_options_frame, text="Stop", fg_color="red", command=self.controller.stop_mining)
-        self.stop_button.pack(pady=10)
+        task_types = []
+        if self.epics_switch.get() == 1:
+            task_types.append('Epic')
+        if self.user_stories_switch.get() == 1:
+            task_types.append('Story')
+        if self.tasks_switch.get() == 1:
+            task_types.append('Task')
+        if self.subtasks_switch.get() == 1:
+            task_types.append('Sub-task')
+        if self.bugs_switch.get() == 1:
+            task_types.append('Bug')
+        if self.enablers_switch.get() == 1:
+            task_types.append('Enabler')
+
+        def collect_data():
+            try:
+                data = self.controller.mine_data(url, start_date, end_date, task_types) #Adicionar self.update_progress() como argumento
+                # message = ""
+                # for task_type, tasks in data.items():
+                #     message += f"{task_type}: {len(tasks)}\n"
+                # self.result_label.configure(text=message.strip())
+            except ValueError as ve:
+                self.result_label.configure(text=str(ve))
+                
+        thread = threading.Thread(target=collect_data)
+        thread.start()
+
+    def stop_process(self):
+        self.controller.stop_process()
+        self.result_label.configure(text="Process stopped by the user.")
     
     def run(self):
         self.mainloop()
