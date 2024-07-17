@@ -2,7 +2,9 @@ import customtkinter as ctk
 import threading
 import tkinter as tk
 import os
+import platform
 from tkcalendar import DateEntry
+from tkinter import PhotoImage
 from PIL import Image, ImageTk, ImageDraw
 from controller.controller import GitHubController, JiraController   
 from dotenv import load_dotenv, set_key, dotenv_values
@@ -522,7 +524,11 @@ class DataMinerApp:
         self.root = root
         self.root.title("Data Miner")
         self.root.configure(bg='#1e1e1e')
-        self.root.iconbitmap('view/icons/datamining.ico')
+
+        if platform.system() == "Linux":
+            self.root.iconphoto(True, PhotoImage(file='view/icons/datamining.png'))
+        else:
+            self.root.iconbitmap('view/icons/datamining.ico')
 
         self.window_width = 800
         self.window_height = 450
