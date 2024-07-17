@@ -14,7 +14,7 @@ class BaseController:
 
     def get_save_path(self):
         load_dotenv()  # Recarregar as variáveis de ambiente
-        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
 
     def save_to_json(self, data, file_path):
         with open(file_path, 'w') as f:
@@ -46,7 +46,7 @@ class GitHubController(BaseController):
             if self.stop_process_flag:
                 print("Data collection stopped by user.")
                 return
-            data['commits'] = self.api.get_commits(repo_name, start_date_iso, end_date_iso, max_workers)
+            data['commits'] = self.api.get_commits_pydriller(repo_name, start_date_iso, end_date_iso, max_workers)
             self.db.insert_commits(repo_name, data['commits'])
             update_progress_callback(progress_step)
 
