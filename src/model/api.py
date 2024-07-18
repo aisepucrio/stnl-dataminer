@@ -240,8 +240,8 @@ class GitHubAPI(BaseAPI):
                 else:
                     print(f"Error fetching data from URL: {url} - {str(e)}")
                     return []
-        print("All tokens have reached the limit.")
-        return []
+        print("All tokens have reached the limit. Fetch")
+        return [] 
 
     def get_comments_with_initial(self, issue_url, initial_comment, issue_number, max_workers=None):
         if max_workers is None:
