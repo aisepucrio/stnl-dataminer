@@ -14,7 +14,7 @@ class BaseController:
 
     def get_save_path(self):
         load_dotenv()  # Recarregar as variáveis de ambiente
-        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
 
     def save_to_json(self, data, file_path):
         with open(file_path, 'w') as f:
@@ -33,7 +33,6 @@ class GitHubController(BaseController):
     def collect_data(self, repo_url, start_date, end_date, options, max_workers=None, update_progress_callback=None, progress_step=None):
         if max_workers is None:
             max_workers = self.max_workers_default
-        print(f"Number of workers being used: {max_workers}")
         repo_name = self.api.get_repo_name(repo_url)
         self.db.create_schema_and_tables(repo_name)
         
@@ -46,7 +45,7 @@ class GitHubController(BaseController):
             if self.stop_process_flag:
                 print("Data collection stopped by user.")
                 return
-            data['commits'] = self.api.get_commits(repo_name, start_date_iso, end_date_iso, max_workers)
+            data['commits'] = self.api.get_commits_pydriller(repo_name, start_date_iso, end_date_iso, max_workers)
             self.db.insert_commits(repo_name, data['commits'])
             update_progress_callback(progress_step)
 
@@ -77,6 +76,7 @@ class GitHubController(BaseController):
         save_path = self.get_save_path()
         file_path = os.path.join(save_path, f"{repo_name.replace('/', '_').replace('-', '_')}.json")
         self.save_to_json(data, file_path)
+        print(f"Data has been successfully mined and saved to {file_path}")
         
         return data
 

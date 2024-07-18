@@ -30,7 +30,7 @@ class BaseAPI:
 
     def get_save_path(self):
         load_dotenv()
-        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
+        return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
 
     def save_to_json(self, data, filename):
         save_path = self.get_save_path()
@@ -56,6 +56,13 @@ class JiraAPI(BaseAPI):
         path_parts = parsed_url.path.split('/')
         project_key = path_parts[path_parts.index('projects') + 1] if 'projects' in path_parts else None
         return domain, project_key
+
+    def identify_platform(self, url):
+        if 'atlassian.net' in url:
+            return 'jira'
+        elif 'github.com' in url:
+            return 'github'
+        return None
 
     def search_custom_fields(self, jira_domain):
         url = f"https://{jira_domain}/rest/api/2/field"
@@ -86,13 +93,12 @@ class JiraAPI(BaseAPI):
                 'maxResults': max_results
             }
             auth = (self.email, self.api_token)
+            response = requests.get(url, params=query, auth=auth)
             try:
-                response = requests.get(url, params=query, auth=auth)
-            except Exception as e:
-                print(f"Error fetching data from URL: {url} - {str(e)}")
-                break
-            # print(response.json())
-            # break
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as e:
+                print(f"Error response: {response.text}")
+                raise e
             issues = response.json()['issues']
             all_issues.extend(issues)
             start_at += max_results
@@ -197,6 +203,7 @@ class GitHubAPI(BaseAPI):
     def get_all_pages(self, url, desc, params=None, date_key=None, start_date=None, end_date=None, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         results = []
         if isinstance(start_date, str):
             start_date = datetime.strptime(start_date[:10], '%Y-%m-%d').date()
@@ -254,8 +261,8 @@ class GitHubAPI(BaseAPI):
                 else:
                     print(f"Error fetching data from URL: {url} - {str(e)}")
                     return []
-        print("All tokens have reached the limit. Fetch")
-        return [] 
+        print("All tokens have reached the limit.")
+        return []
 
     def get_comments_with_initial(self, issue_url, initial_comment, issue_number, max_workers=None):
         if max_workers is None:
@@ -294,16 +301,12 @@ class GitHubAPI(BaseAPI):
         return essential_commits
     
     @staticmethod
-    def user_home_directory():
+    def user_home_directory(self):
         home_directory = os.path.expanduser("~")
         return home_directory
 
-    def repo_exists(self, repo_name: str, clone_path: str = None) -> bool:
-        if clone_path is None:
-            clone_path = GitHubAPI.user_home_directory() + '/GitHubClones'
-        else:
-            clone_path = clone_path + '/' + repo_name.split('/')[1]
-
+    def repo_exists(self, repo_name: str, clone_path: str = user_home_directory() + '/GitHubClones') -> bool:
+        clone_path = clone_path + '/' + repo_name.split('/')[1]
         if not os.path.exists(clone_path):
             repo_url = 'https://github.com/' + repo_name
             print(f'\nCreating directory: {clone_path}\n')
@@ -315,28 +318,23 @@ class GitHubAPI(BaseAPI):
         else:
             print(f'\nRepo already exists: {clone_path}\n')
             return True
-
     
     def convert_to_iso8601(self, date):
         return date.isoformat()
 
-    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None  = None) -> list:
-        # TODO Adicionar um repo_pardrão que corresponda a pasta root do usuário independete do OS
-        # TODO Adicionar uma lógica de if else usando o repo_exists para verificar se vai utilizar um repo já baixado ou baixar outo
-        # TODO Adicionar um aviso que ao utilizar um repo já baixado, o mesmo pode estar desatualizado
-        # TODO Adicionar a opção do usuário poder escolher se quer atualizar o repo já baixado ou não
+    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int = 4, clone_path: str = user_home_directory()) -> list:
+
+        #TODO Adicionar um repo_pardrão que corresponda a pasta root do usuário independete do OS
+        #TODO Adicionar uma lógica de if else usando o repo_exists para verificar se vai utilizar um repo já baixado ou baixar outo
+        #TODO Adicionar um aviso que ao utilizar um repo já baixado, o mesmo pode estar desatualizado
+        #TODO Adicionar a opção do usuário poder escolher se quer atualizar o repo já baixado ou não
 
         start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
         end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
 
-        if max_workers is None:
-            max_workers = self.max_workers_default
-
-        if clone_path is None:
-            clone_path = GitHubAPI.user_home_directory() + '/GitHubClones'
-
         if self.repo_exists(repo_name, clone_path):
             repo = Repository(clone_path + '/' + repo_name.split('/')[1], since=start_date, to=end_date).traverse_commits()
+        
         else:
             repo_url = 'https://github.com/' + repo_name
             repo = Repository(repo_url, since=start_date, to=end_date).traverse_commits()
@@ -346,7 +344,7 @@ class GitHubAPI(BaseAPI):
         essential_commits = [{
             'sha': commit.hash,
             'message': commit.msg,
-            'date': self.convert_to_iso8601(commit.author_date),
+            'date': self.convert_to_iso8601(commit.author_date), 
             'author': commit.author.name
         } for commit in commits]
 
@@ -355,6 +353,7 @@ class GitHubAPI(BaseAPI):
     def get_issues(self, repo_name, start_date, end_date, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/issues'
         params = {
             'since': f'{start_date}T00:00:01Z',
@@ -384,6 +383,7 @@ class GitHubAPI(BaseAPI):
     def get_pull_requests(self, repo_name, start_date, end_date, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/pulls'
         params = {
             'since': f'{start_date}T00:00:01Z',
@@ -413,6 +413,7 @@ class GitHubAPI(BaseAPI):
     def get_branches(self, repo_name, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
+        print(f"Number of workers being used: {max_workers}")
         url = f'https://api.github.com/repos/{repo_name}/branches'
         branches = self.get_all_pages(url, 'Fetching branches', max_workers=max_workers)
         essential_branches = [{

@@ -325,7 +325,7 @@ class SettingsApp(ctk.CTk):
     def update_env_file(self, key, value):
         set_key(self.env_file, key, value)
         if key == 'SAVE_PATH':
-            self.save_path = value  # Atualiza o save_path dinamicamente
+            self.save_path = value 
 
     def add_github_token(self):
         token = self.github_token_entry.get()
