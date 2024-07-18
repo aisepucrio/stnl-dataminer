@@ -4,13 +4,14 @@ import json
 import shutil
 import tempfile
 import datetime
+import customtkinter as ctk
 from tqdm import tqdm
 from pydriller import Repository
 from urllib.parse import urlparse, urlencode
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dotenv import load_dotenv
-from git import Repo, RemoteProgress
+from git import Repo, RemoteProgress, GitCommandError
 
 load_dotenv()
 
@@ -314,15 +315,39 @@ class GitHubAPI(BaseAPI):
             return False
         else:
             print(f'\nRepo already exists: {clone_path}\n')
+            self.ask_to_update_repo(clone_path)
             return True
 
-    
+    def ask_to_update_repo(self, repo_path):
+        popup = ctk.CTkToplevel()
+        popup.title("Repository Exists")
+        popup.geometry("400x200")
+
+        label = ctk.CTkLabel(popup, text="The repository already exists and may be outdated.\nDo you want to update it?")
+        label.pack(pady=20)
+
+        update_button = ctk.CTkButton(popup, text="Update", command=lambda: self.update_repo(repo_path, popup))
+        update_button.pack(side="left", padx=20, pady=20)
+
+        skip_button = ctk.CTkButton(popup, text="Skip", command=popup.destroy)
+        skip_button.pack(side="right", padx=20, pady=20)
+
+        popup.wait_window()
+
+    def update_repo(self, repo_path, popup):
+        try:
+            repo = Repo(repo_path)
+            origin = repo.remotes.origin
+            origin.pull()
+            print(f'\nRepo updated: {repo_path}\n')
+        except GitCommandError as e:
+            print(f'Error updating repo: {e}')
+        popup.destroy()
+
     def convert_to_iso8601(self, date):
         return date.isoformat()
 
     def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None  = None) -> list:
-        # TODO Adicionar um repo_pardrão que corresponda a pasta root do usuário independete do OS
-        # TODO Adicionar uma lógica de if else usando o repo_exists para verificar se vai utilizar um repo já baixado ou baixar outo
         # TODO Adicionar um aviso que ao utilizar um repo já baixado, o mesmo pode estar desatualizado
         # TODO Adicionar a opção do usuário poder escolher se quer atualizar o repo já baixado ou não
 

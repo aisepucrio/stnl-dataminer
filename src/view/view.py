@@ -146,7 +146,7 @@ class GitHubRepoInfoApp(BaseView):
         repo_url = self.url_entry.get()
         start_date = self.start_date_entry.get_date()
         end_date = self.end_date_entry.get_date()
-        max_workers = self.controller.max_workers_default  # Always use the default from .env
+        max_workers = self.controller.max_workers_default 
 
         options = {
             'commits': self.commits_switch.get() == 1,
