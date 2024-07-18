@@ -121,7 +121,6 @@ class GitHubRepoInfoApp(ctk.CTk):
         self.root.geometry("450x800")
         self.root.title("GitHub Repo Info")
 
-        # Adicionar botão de voltar
         self.back_button = ctk.CTkButton(
             self.root, text="← Back", command=self.back_to_menu, 
             corner_radius=8, fg_color="#2e2e2e", hover_color="#4a4a4a",
@@ -188,7 +187,7 @@ class GitHubRepoInfoApp(ctk.CTk):
         repo_url = self.entry_url.get()
         start_date = self.entry_start_date.get_date()
         end_date = self.entry_end_date.get_date()
-        max_workers = self.controller.max_workers_default  # Always use the default from .env
+        max_workers = self.controller.max_workers_default 
 
         options = {
             'commits': self.switch_commits.get() == 1,
@@ -365,7 +364,7 @@ class SettingsApp(ctk.CTk):
     def update_env_file(self, key, value):
         set_key(self.env_file, key, value)
         if key == 'SAVE_PATH':
-            self.save_path = value  # Atualiza o save_path dinamicamente
+            self.save_path = value 
 
     def add_github_token(self):
         token = self.github_token_entry.get()

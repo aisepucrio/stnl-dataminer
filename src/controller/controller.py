@@ -76,6 +76,7 @@ class GitHubController(BaseController):
         save_path = self.get_save_path()
         file_path = os.path.join(save_path, f"{repo_name.replace('/', '_').replace('-', '_')}.json")
         self.save_to_json(data, file_path)
+        print(f"Data has been successfully mined and saved to {file_path}")
         
         return data
 
