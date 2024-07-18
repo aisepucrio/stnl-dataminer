@@ -10,23 +10,12 @@ from controller.controller import GitHubController, JiraController
 from dotenv import load_dotenv, set_key, dotenv_values
 from tkinter import font as tkfont, messagebox, Toplevel, Listbox, filedialog
 
-# class BaseView(ctk.CTk):
-#     def __init__(self, menu_app):
-#         super().__init__()
-
-#         self.menu_app = menu_app
-
-#         self.geometry("550x700")
-#         self.configure(bg="black")
-
-class JiraDataMinerApp(ctk.CTk):
-    def __init__(self, menu_app):
+class BaseView(ctk.CTk):
+    def __init__(self, menu_app, title, url_label, url_placeholder):
         super().__init__()
 
         self.menu_app = menu_app
-        self.controller = JiraController(self)
-
-        self.title("Jira Data Miner")
+        self.title(title)
         self.geometry("550x750")
         self.configure(bg="black")
 
@@ -38,19 +27,19 @@ class JiraDataMinerApp(ctk.CTk):
         )
         self.back_button.pack(pady=12, padx=10, anchor='nw')
 
-        default_font = ctk.CTkFont(family="Segoe UI", size=12)
+        self.default_font = ctk.CTkFont(family="Segoe UI", size=12)
 
-        self.url_label = ctk.CTkLabel(self, text="Project URL", font=default_font)
+        self.url_label = ctk.CTkLabel(self, text=url_label, font=self.default_font)
         self.url_label.pack(pady=10)
-        self.url_entry = ctk.CTkEntry(self, placeholder_text='Enter Jira project URL', width=400, font=default_font)
+        self.url_entry = ctk.CTkEntry(self, placeholder_text=url_placeholder, width=400, font=self.default_font)
         self.url_entry.pack(pady=12, padx=10)
 
-        self.start_date_label = ctk.CTkLabel(self, text="Start Date (DD/MM/YYYY)", font=default_font)
+        self.start_date_label = ctk.CTkLabel(self, text="Start Date (DD/MM/YYYY)", font=self.default_font)
         self.start_date_label.pack(pady=12, padx=10)
         self.start_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
         self.start_date_entry.pack(pady=12, padx=10)
 
-        self.end_date_label = ctk.CTkLabel(self, text="End Date (DD/MM/YYYY)", font=default_font)
+        self.end_date_label = ctk.CTkLabel(self, text="End Date (DD/MM/YYYY)", font=self.default_font)
         self.end_date_label.pack(pady=12, padx=10)
         self.end_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
         self.end_date_entry.pack(pady=12, padx=10)
@@ -58,35 +47,50 @@ class JiraDataMinerApp(ctk.CTk):
         self.mining_options_frame = ctk.CTkFrame(self)
         self.mining_options_frame.pack(pady=20)
 
-        self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=default_font)
-        self.epics_switch.pack(pady=5, padx=20, anchor='w')
-        self.user_stories_switch = ctk.CTkSwitch(self.mining_options_frame, text="User Stories", font=default_font)
-        self.user_stories_switch.pack(pady=5, padx=20, anchor='w')
-        self.tasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Tasks", font=default_font)
-        self.tasks_switch.pack(pady=5, padx=20, anchor='w')
-        self.subtasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Sub-tasks", font=default_font)
-        self.subtasks_switch.pack(pady=5, padx=20, anchor='w')
-        self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bugs", font=default_font)
-        self.bugs_switch.pack(pady=5, padx=20, anchor='w')
-        self.enablers_switch = ctk.CTkSwitch(self.mining_options_frame, text="Enablers", font=default_font)
-        self.enablers_switch.pack(pady=5, padx=20, anchor='w')
-
-        self.mine_button = ctk.CTkButton(self, text="Mine Data", command=self.mine_data, font=default_font, corner_radius=8)
+        self.mine_button = ctk.CTkButton(self, text="Mine Data", command=self.mine_data, font=self.default_font, corner_radius=8)
         self.mine_button.pack(pady=12, padx=10)
 
-        self.stop_button = ctk.CTkButton(self, text="Stop", command=self.stop_process, font=default_font, corner_radius=8, fg_color="red")
+        self.stop_button = ctk.CTkButton(self, text="Stop", command=self.stop_process, font=self.default_font, corner_radius=8, fg_color="red")
         self.stop_button.pack(pady=12, padx=10)
 
         self.progress_bar = ctk.CTkProgressBar(self)
         self.progress_bar.pack(pady=12, padx=10)
         self.progress_bar.set(0)
 
-        self.result_label = ctk.CTkLabel(self, text="", font=default_font)
+        self.result_label = ctk.CTkLabel(self, text="", font=self.default_font)
         self.result_label.pack(pady=12, padx=10)
 
     def back_to_menu(self):
         self.menu_app.deiconify()
         self.destroy()
+
+    def mine_data(self):
+        pass
+
+    def stop_process(self):
+        pass
+
+    def run(self):
+        self.mainloop()
+        
+
+class JiraDataMinerApp(BaseView):
+    def __init__(self, menu_app):
+        super().__init__(menu_app, title="Jira Data Miner", url_label="Project URL", url_placeholder="Enter Jira project URL")
+        self.controller = JiraController(self)
+
+        self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
+        self.epics_switch.pack(pady=5, padx=20, anchor='w')
+        self.user_stories_switch = ctk.CTkSwitch(self.mining_options_frame, text="User Stories", font=self.default_font)
+        self.user_stories_switch.pack(pady=5, padx=20, anchor='w')
+        self.tasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Tasks", font=self.default_font)
+        self.tasks_switch.pack(pady=5, padx=20, anchor='w')
+        self.subtasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Sub-tasks", font=self.default_font)
+        self.subtasks_switch.pack(pady=5, padx=20, anchor='w')
+        self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bugs", font=self.default_font)
+        self.bugs_switch.pack(pady=5, padx=20, anchor='w')
+        self.enablers_switch = ctk.CTkSwitch(self.mining_options_frame, text="Enablers", font=self.default_font)
+        self.enablers_switch.pack(pady=5, padx=20, anchor='w')
 
     def mine_data(self):
         url = self.url_entry.get()
@@ -123,74 +127,20 @@ class JiraDataMinerApp(ctk.CTk):
     def stop_process(self):
         self.controller.stop_process()
         self.result_label.configure(text="Process stopped by the user.")
-    
-    def run(self):
-        self.mainloop()
 
-class GitHubRepoInfoApp(ctk.CTk):
+class GitHubRepoInfoApp(BaseView):
     def __init__(self, menu_app):
-        super().__init__()
-
-        self.menu_app = menu_app
+        super().__init__(menu_app, title="GitHub Data Miner", url_label="Repository URL", url_placeholder='Enter GitHub repository URL')
         self.controller = GitHubController()
 
-        self.title("GitHub Data Miner")
-        self.geometry("550x750")
-        self.configure(bg="black")
-
-        # Adicionar botão de voltar
-        self.back_button = ctk.CTkButton(
-            self, text="← Back", command=self.back_to_menu, 
-            corner_radius=8, fg_color="#2e2e2e", hover_color="#4a4a4a",
-            text_color="#ffffff", width=80, height=32, font=("Segoe UI", 12, "bold")
-        )
-        self.back_button.pack(pady=12, padx=10, anchor='nw')
-
-        default_font = ctk.CTkFont(family="Segoe UI", size=12)
-
-        self.url_label = ctk.CTkLabel(self, text="Repository URL", font=default_font)
-        self.url_label.pack(pady=12, padx=10)
-        self.url_entry = ctk.CTkEntry(self, placeholder_text='Enter GitHub repo URL', width=400, font=default_font)
-        self.url_entry.pack(pady=12, padx=10)
-
-        self.start_date_label = ctk.CTkLabel(self, text="Start Date (DD/MM/YYYY)", font=default_font)
-        self.start_date_label.pack(pady=12, padx=10)
-        self.start_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
-        self.start_date_entry.pack(pady=12, padx=10)
-
-        self.end_date_label = ctk.CTkLabel(self, text="End Date (DD/MM/YYYY)", font=default_font)
-        self.end_date_label.pack(pady=12, padx=10)
-        self.end_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
-        self.end_date_entry.pack(pady=12, padx=10)
-
-        self.mining_options_frame = ctk.CTkFrame(self)
-        self.mining_options_frame.pack(pady=12, padx=10, anchor='center', expand=True)
-
-        self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits", font=default_font)
+        self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits", font=self.default_font)
         self.commits_switch.pack(pady=5, padx=20, anchor='w')
-        self.issues_switch = ctk.CTkSwitch(self.mining_options_frame, text="Issues", font=default_font)
+        self.issues_switch = ctk.CTkSwitch(self.mining_options_frame, text="Issues", font=self.default_font)
         self.issues_switch.pack(pady=5, padx=20, anchor='w')
-        self.pull_requests_switch = ctk.CTkSwitch(self.mining_options_frame, text="Pull Requests", font=default_font)
+        self.pull_requests_switch = ctk.CTkSwitch(self.mining_options_frame, text="Pull Requests", font=self.default_font)
         self.pull_requests_switch.pack(pady=5, padx=20, anchor='w')
-        self.branches_switch = ctk.CTkSwitch(self.mining_options_frame, text="Branches", font=default_font)
+        self.branches_switch = ctk.CTkSwitch(self.mining_options_frame, text="Branches", font=self.default_font)
         self.branches_switch.pack(pady=5, padx=20, anchor='w')
-
-        self.mine_button = ctk.CTkButton(self, text="Mine Data", command=self.mine_data, font=default_font, corner_radius=8)
-        self.mine_button.pack(pady=12, padx=10)
-
-        self.stop_button = ctk.CTkButton(self, text="Stop", command=self.stop_process, font=default_font, corner_radius=8, fg_color="red")
-        self.stop_button.pack(pady=12, padx=10)
-
-        self.progress_bar = ctk.CTkProgressBar(self)
-        self.progress_bar.pack(pady=12, padx=10)
-        self.progress_bar.set(0)
-
-        self.result_label = ctk.CTkLabel(self, text="", font=default_font)
-        self.result_label.pack(pady=12, padx=10)
-
-    def back_to_menu(self):
-        self.menu_app.deiconify()
-        self.destroy()  # Ensure the current window is destroyed
 
     def mine_data(self):
         repo_url = self.url_entry.get()
@@ -234,9 +184,6 @@ class GitHubRepoInfoApp(ctk.CTk):
     def stop_process(self):
         self.controller.stop_process()
         self.result_label.configure(text="Process stopped by the user.")
-
-    def run(self):
-        self.mainloop()
 
 class CTkListbox(ctk.CTkFrame):
     def __init__(self, master=None, **kwargs):
