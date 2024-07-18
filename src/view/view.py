@@ -118,7 +118,7 @@ class GitHubRepoInfoApp(ctk.CTk):
         ctk.set_default_color_theme("dark-blue")
 
         self.root = ctk.CTk()
-        self.root.geometry("450x750")
+        self.root.geometry("450x800")
         self.root.title("GitHub Repo Info")
 
         # Adicionar botão de voltar
