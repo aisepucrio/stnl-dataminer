@@ -4,13 +4,25 @@ import json
 import shutil
 import tempfile
 import datetime
+from tqdm import tqdm
 from pydriller import Repository
 from urllib.parse import urlparse, urlencode
 from datetime import datetime
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dotenv import load_dotenv
+from git import Repo, RemoteProgress
 
 load_dotenv()
+
+class CloneProgress(RemoteProgress):
+    def __init__(self):
+        super().__init__()
+        self.pbar = tqdm()
+    
+    def update(self, op_code, cur_count, max_count=None, message=''):
+        self.pbar.total = max_count
+        self.pbar.n = cur_count
+        self.pbar.refresh()
 
 class BaseAPI:
     def __init__(self):
@@ -288,19 +300,44 @@ class GitHubAPI(BaseAPI):
 
         return essential_commits
     
+    @staticmethod
+    def user_home_directory(self):
+        home_directory = os.path.expanduser("~")
+        return home_directory
+
+    def repo_exists(self, repo_name: str, clone_path: str = user_home_directory() + '/GitHubClones') -> bool:
+        clone_path = clone_path + '/' + repo_name.split('/')[1]
+        if not os.path.exists(clone_path):
+            repo_url = 'https://github.com/' + repo_name
+            print(f'\nCreating directory: {clone_path}\n')
+            os.makedirs(clone_path)
+            print(f'\nCloning repo: {repo_url}\n')
+            Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
+            print(f'\nRepo cloned: {clone_path}\n')
+            return False
+        else:
+            print(f'\nRepo already exists: {clone_path}\n')
+            return True
+    
     def convert_to_iso8601(self, date):
         return date.isoformat()
 
-    def get_commits_pydriller(self, repo_name, start_date, end_date, max_workers=None) -> list:
-        if max_workers is None:
-            max_workers = self.max_workers_default
+    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int = 4, clone_path: str = user_home_directory()) -> list:
 
-        repo_url = 'https://github.com/' + repo_name
+        #TODO Adicionar um repo_pardrão que corresponda a pasta root do usuário independete do OS
+        #TODO Adicionar uma lógica de if else usando o repo_exists para verificar se vai utilizar um repo já baixado ou baixar outo
+        #TODO Adicionar um aviso que ao utilizar um repo já baixado, o mesmo pode estar desatualizado
+        #TODO Adicionar a opção do usuário poder escolher se quer atualizar o repo já baixado ou não
 
         start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
         end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
 
-        repo = Repository(repo_url, since=start_date, to=end_date).traverse_commits()
+        if self.repo_exists(repo_name, clone_path):
+            repo = Repository(clone_path + '/' + repo_name.split('/')[1], since=start_date, to=end_date).traverse_commits()
+        
+        else:
+            repo_url = 'https://github.com/' + repo_name
+            repo = Repository(repo_url, since=start_date, to=end_date).traverse_commits()
 
         commits = list(repo)
 

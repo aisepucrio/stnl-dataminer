@@ -33,7 +33,6 @@ class GitHubController(BaseController):
     def collect_data(self, repo_url, start_date, end_date, options, max_workers=None, update_progress_callback=None, progress_step=None):
         if max_workers is None:
             max_workers = self.max_workers_default
-        print(f"Number of workers being used: {max_workers}")
         repo_name = self.api.get_repo_name(repo_url)
         self.db.create_schema_and_tables(repo_name)
         

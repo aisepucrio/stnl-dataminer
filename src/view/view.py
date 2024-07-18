@@ -190,8 +190,6 @@ class GitHubRepoInfoApp(ctk.CTk):
         end_date = self.entry_end_date.get_date()
         max_workers = self.controller.max_workers_default  # Always use the default from .env
 
-        print(f"Number of workers being used: {max_workers}")
-
         options = {
             'commits': self.switch_commits.get() == 1,
             'issues': self.switch_issues.get() == 1,
