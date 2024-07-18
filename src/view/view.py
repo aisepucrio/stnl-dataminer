@@ -148,8 +148,6 @@ class GitHubRepoInfoApp(BaseView):
         end_date = self.end_date_entry.get_date()
         max_workers = self.controller.max_workers_default  # Always use the default from .env
 
-        print(f"Number of workers being used: {max_workers}")
-
         options = {
             'commits': self.commits_switch.get() == 1,
             'issues': self.issues_switch.get() == 1,
