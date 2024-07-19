@@ -299,7 +299,7 @@ class GitHubAPI(BaseAPI):
         home_directory = os.path.expanduser("~")
         return home_directory
 
-    def repo_exists(self, repo_name: str, clone_path: str = None) -> bool:
+    def repo_exists(self, repo_name: str, clone_path: str | None = None) -> bool:
         if clone_path is None:
             clone_path = GitHubAPI.user_home_directory() + '/GitHubClones'
         else:
@@ -348,8 +348,6 @@ class GitHubAPI(BaseAPI):
         return date.isoformat()
 
     def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None  = None) -> list:
-        # TODO Adicionar um aviso que ao utilizar um repo já baixado, o mesmo pode estar desatualizado
-        # TODO Adicionar a opção do usuário poder escolher se quer atualizar o repo já baixado ou não
 
         start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
         end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
