@@ -60,6 +60,11 @@ class BaseView(ctk.CTk):
         self.result_label = ctk.CTkLabel(self, text="", font=self.default_font)
         self.result_label.pack(pady=12, padx=10)
 
+    def show_temp_message(self, message, duration=3000):
+        temp_label = ctk.CTkLabel(self, text=message, font=self.default_font)
+        temp_label.pack(pady=12, padx=10)
+        self.after(duration, temp_label.destroy)
+
     def back_to_menu(self):
         self.menu_app.deiconify()
         self.destroy()
@@ -73,7 +78,6 @@ class BaseView(ctk.CTk):
     def run(self):
         self.mainloop()
         
-
 class JiraDataMinerApp(BaseView):
     def __init__(self, menu_app):
         super().__init__(menu_app, title="Jira Data Miner", url_label="Project URL", url_placeholder="Enter Jira project URL")
@@ -131,7 +135,7 @@ class JiraDataMinerApp(BaseView):
 class GitHubRepoInfoApp(BaseView):
     def __init__(self, menu_app):
         super().__init__(menu_app, title="GitHub Data Miner", url_label="Repository URL", url_placeholder='Enter GitHub repository URL')
-        self.controller = GitHubController()
+        self.controller = GitHubController(self) 
 
         self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits", font=self.default_font)
         self.commits_switch.pack(pady=5, padx=20, anchor='w')

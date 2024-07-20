@@ -125,8 +125,9 @@ class JiraAPI(BaseAPI):
         return issues
 
 class GitHubAPI(BaseAPI):
-    def __init__(self):
+    def __init__(self, view=None):
         super().__init__()
+        self.view = view
         self.headers = {'Accept': 'application/vnd.github.v3+json'}
         self.auth = None
         self.tokens = None
@@ -256,7 +257,7 @@ class GitHubAPI(BaseAPI):
                     print(f"Error fetching data from URL: {url} - {str(e)}")
                     return []
         print("All tokens have reached the limit. Fetch")
-        return [] 
+        return []
 
     def get_comments_with_initial(self, issue_url, initial_comment, issue_number, max_workers=None):
         if max_workers is None:
@@ -309,6 +310,10 @@ class GitHubAPI(BaseAPI):
             repo_url = 'https://github.com/' + repo_name
             print(f'\nCreating directory: {clone_path}\n')
             os.makedirs(clone_path)
+            
+            if self.view:
+                self.view.show_temp_message("Por favor aguarde, clonando o repositório...")
+            
             print(f'\nCloning repo: {repo_url}\n')
             Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
             print(f'\nRepo cloned: {clone_path}\n')

@@ -24,11 +24,12 @@ class BaseController:
         self.stop_process_flag = True
 
 class GitHubController(BaseController):
-    def __init__(self):
+    def __init__(self, view):
         super().__init__()
-        self.api = GitHubAPI()
+        self.view = view
         self.db = Database()
         self.max_workers_default = int(os.getenv('MAX_WORKERS', '4'))
+        self.api = GitHubAPI(view)
 
     def collect_data(self, repo_url, start_date, end_date, options, max_workers=None, update_progress_callback=None, progress_step=None):
         if max_workers is None:
@@ -47,7 +48,8 @@ class GitHubController(BaseController):
                 return
             data['commits'] = self.api.get_commits_pydriller(repo_name, start_date_iso, end_date_iso, max_workers)
             self.db.insert_commits(repo_name, data['commits'])
-            update_progress_callback(progress_step)
+            if update_progress_callback:
+                self.view.after(0, update_progress_callback, progress_step)
 
         if options.get('issues'):
             if self.stop_process_flag:
@@ -55,7 +57,8 @@ class GitHubController(BaseController):
                 return
             data['issues'] = self.api.get_issues(repo_name, start_date_iso, end_date_iso, max_workers)
             self.db.insert_issues(repo_name, data['issues'])
-            update_progress_callback(progress_step)
+            if update_progress_callback:
+                self.view.after(0, update_progress_callback, progress_step)
 
         if options.get('pull_requests'):
             if self.stop_process_flag:
@@ -63,7 +66,8 @@ class GitHubController(BaseController):
                 return
             data['pull_requests'] = self.api.get_pull_requests(repo_name, start_date_iso, end_date_iso, max_workers)
             self.db.insert_pull_requests(repo_name, data['pull_requests'])
-            update_progress_callback(progress_step)
+            if update_progress_callback:
+                self.view.after(0, update_progress_callback, progress_step)
 
         if options.get('branches'):
             if self.stop_process_flag:
@@ -71,7 +75,8 @@ class GitHubController(BaseController):
                 return
             data['branches'] = self.api.get_branches(repo_name, max_workers)
             self.db.insert_branches(repo_name, data['branches'])
-            update_progress_callback(progress_step)
+            if update_progress_callback:
+                self.view.after(0, update_progress_callback, progress_step)
 
         save_path = self.get_save_path()
         file_path = os.path.join(save_path, f"{repo_name.replace('/', '_').replace('-', '_')}.json")
