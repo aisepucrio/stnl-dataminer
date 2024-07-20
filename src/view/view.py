@@ -16,7 +16,7 @@ class BaseView(ctk.CTk):
 
         self.menu_app = menu_app
         self.title(title)
-        self.geometry("550x750")
+        self.geometry("550x770")
         self.configure(bg="black")
 
         # Adicionar botão de voltar
@@ -65,6 +65,16 @@ class BaseView(ctk.CTk):
         temp_label.pack(pady=12, padx=10)
         self.after(duration, temp_label.destroy)
 
+    def center_window(self):
+        self.update_idletasks()
+        width = self.winfo_width()
+        height = self.winfo_height()
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.geometry(f"{width}x{height}+{x}+{y}")
+
     def back_to_menu(self):
         self.menu_app.deiconify()
         self.destroy()
@@ -82,6 +92,7 @@ class JiraDataMinerApp(BaseView):
     def __init__(self, menu_app):
         super().__init__(menu_app, title="Jira Data Miner", url_label="Project URL", url_placeholder="Enter Jira project URL")
         self.controller = JiraController(self)
+        self.center_window()
 
         self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
         self.epics_switch.pack(pady=5, padx=20, anchor='w')
@@ -136,7 +147,8 @@ class GitHubRepoInfoApp(BaseView):
     def __init__(self, menu_app):
         super().__init__(menu_app, title="GitHub Data Miner", url_label="Repository URL", url_placeholder='Enter GitHub repository URL')
         self.controller = GitHubController(self) 
-
+        self.center_window()
+        
         self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits", font=self.default_font)
         self.commits_switch.pack(pady=5, padx=20, anchor='w')
         self.issues_switch = ctk.CTkSwitch(self.mining_options_frame, text="Issues", font=self.default_font)
@@ -205,11 +217,13 @@ class CTkListbox(ctk.CTkFrame):
     def get(self, *args):
         return self.listbox.get(*args)
 
-class SettingsApp(ctk.CTk):
+class SettingsApp(BaseView, ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Settings")
         self.geometry("705x295")  # Aumenta a altura para o novo campo
+        self.center_window()
+        
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
 
@@ -479,7 +493,7 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
 
-class DataMinerApp:
+class DataMinerApp():
     def __init__(self, root):
         self.root = root
         self.root.title("Data Miner")
