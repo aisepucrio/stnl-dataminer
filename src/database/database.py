@@ -4,9 +4,12 @@ import psycopg2
 from psycopg2 import sql
 from dotenv import load_dotenv
 
+# Classe para interação com o banco de dados
 class Database:
     def __init__(self):
+        # Carrega variáveis de ambiente do arquivo .env
         load_dotenv()
+        # Conecta ao banco de dados PostgreSQL usando variáveis de ambiente
         self.conn = psycopg2.connect(
             host=os.getenv('PG_HOST'),
             database=os.getenv('PG_DATABASE'),
@@ -14,13 +17,18 @@ class Database:
             password=os.getenv('PG_PASSWORD'),
             port=os.getenv('PG_PORT')
         )
+        # Cria um cursor para executar comandos SQL
         self.cursor = self.conn.cursor()
 
+    # Método para criar esquema e tabelas no banco de dados
     def create_schema_and_tables(self, repo_name):
+        # Formata o nome do esquema substituindo caracteres especiais
         schema_name = repo_name.replace('/', '_').replace('-', '_')
         
+        # Cria esquema se não existir
         self.cursor.execute(sql.SQL("CREATE SCHEMA IF NOT EXISTS {}").format(sql.Identifier(schema_name)))
 
+        # Cria tabela de commits se não existir
         self.cursor.execute(sql.SQL("""
         CREATE TABLE IF NOT EXISTS {}.commits (
             sha VARCHAR(255) PRIMARY KEY,
@@ -29,6 +37,7 @@ class Database:
             author VARCHAR(255)
         )""").format(sql.Identifier(schema_name)))
         
+        # Cria tabela de issues se não existir
         self.cursor.execute(sql.SQL("""
         CREATE TABLE IF NOT EXISTS {}.issues (
             number INTEGER PRIMARY KEY,
@@ -38,6 +47,7 @@ class Database:
             comments JSONB
         )""").format(sql.Identifier(schema_name)))
         
+        # Cria tabela de pull requests se não existir
         self.cursor.execute(sql.SQL("""
         CREATE TABLE IF NOT EXISTS {}.pull_requests (
             number INTEGER PRIMARY KEY,
@@ -47,14 +57,17 @@ class Database:
             comments JSONB
         )""").format(sql.Identifier(schema_name)))
         
+        # Cria tabela de branches se não existir
         self.cursor.execute(sql.SQL("""
         CREATE TABLE IF NOT EXISTS {}.branches (
             name VARCHAR(255) PRIMARY KEY,
             sha VARCHAR(255)
         )""").format(sql.Identifier(schema_name)))
 
+        # Comita as alterações no banco de dados
         self.conn.commit()
 
+    # Método para inserir commits na tabela
     def insert_commits(self, repo_name, commits):
         schema_name = repo_name.replace('/', '_').replace('-', '_')
         for commit in commits:
@@ -63,8 +76,10 @@ class Database:
             VALUES (%s, %s, %s, %s) ON CONFLICT (sha) DO NOTHING
             """).format(sql.Identifier(schema_name)),
             (commit['sha'], commit['message'], commit['date'], commit['author']))
+        # Comita as inserções no banco de dados
         self.conn.commit()
 
+    # Método para inserir issues na tabela
     def insert_issues(self, repo_name, issues):
         schema_name = repo_name.replace('/', '_').replace('-', '_')
         for issue in issues:
@@ -73,8 +88,10 @@ class Database:
             VALUES (%s, %s, %s, %s, %s) ON CONFLICT (number) DO NOTHING
             """).format(sql.Identifier(schema_name)),
             (issue['number'], issue['title'], issue['state'], issue['creator'], json.dumps(issue['comments'])))
+        # Comita as inserções no banco de dados
         self.conn.commit()
 
+    # Método para inserir pull requests na tabela
     def insert_pull_requests(self, repo_name, pull_requests):
         schema_name = repo_name.replace('/', '_').replace('-', '_')
         for pr in pull_requests:
@@ -83,8 +100,10 @@ class Database:
             VALUES (%s, %s, %s, %s, %s) ON CONFLICT (number) DO NOTHING
             """).format(sql.Identifier(schema_name)),
             (pr['number'], pr['title'], pr['state'], pr['creator'], json.dumps(pr['comments'])))
+        # Comita as inserções no banco de dados
         self.conn.commit()
 
+    # Método para inserir branches na tabela
     def insert_branches(self, repo_name, branches):
         schema_name = repo_name.replace('/', '_').replace('-', '_')
         for branch in branches:
@@ -93,4 +112,5 @@ class Database:
             VALUES (%s, %s) ON CONFLICT (name) DO NOTHING
             """).format(sql.Identifier(schema_name)),
             (branch['name'], branch['sha']))
+        # Comita as inserções no banco de dados
         self.conn.commit()

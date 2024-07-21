@@ -1,3 +1,4 @@
+# Importando as bibliotecas e módulos necessários
 import customtkinter as ctk
 import threading
 import tkinter as tk
@@ -10,10 +11,12 @@ from controller.controller import GitHubController, JiraController
 from dotenv import load_dotenv, set_key, dotenv_values
 from tkinter import font as tkfont, messagebox, Toplevel, Listbox, filedialog
 
+# Classe BaseView que serve como base para outras visualizações
 class BaseView(ctk.CTk):
     def __init__(self, menu_app, title, url_label, url_placeholder):
         super().__init__()
 
+        # Inicializa as variáveis principais da aplicação
         self.menu_app = menu_app
         self.title(title)
         self.width = 550
@@ -21,7 +24,7 @@ class BaseView(ctk.CTk):
         self.geometry(f'{self.width}x{self.height}')
         self.configure(bg="black")
 
-        # Adicionar botão de voltar
+        # Adiciona um botão de voltar para navegar de volta ao menu
         self.back_button = ctk.CTkButton(
             self, text="← Back", command=self.back_to_menu,
             corner_radius=8, fg_color="#2e2e2e", hover_color="#4a4a4a",
@@ -29,13 +32,16 @@ class BaseView(ctk.CTk):
         )
         self.back_button.pack(pady=12, padx=10, anchor='nw')
 
+        # Define a fonte padrão
         self.default_font = ctk.CTkFont(family="Segoe UI", size=12)
 
+        # Rótulo e campo de entrada para URL
         self.url_label = ctk.CTkLabel(self, text=url_label, font=self.default_font)
         self.url_label.pack(pady=10)
         self.url_entry = ctk.CTkEntry(self, placeholder_text=url_placeholder, width=400, font=self.default_font)
         self.url_entry.pack(pady=12, padx=10)
 
+        # Rótulos e campos de entrada para datas
         self.start_date_label = ctk.CTkLabel(self, text="Start Date (DD/MM/YYYY)", font=self.default_font)
         self.start_date_label.pack(pady=12, padx=10)
         self.start_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
@@ -46,52 +52,65 @@ class BaseView(ctk.CTk):
         self.end_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
         self.end_date_entry.pack(pady=12, padx=10)
 
+        # Frame para as opções de mineração
         self.mining_options_frame = ctk.CTkFrame(self)
         self.mining_options_frame.pack(pady=20)
 
+        # Botão para iniciar a mineração de dados
         self.mine_button = ctk.CTkButton(self, text="Mine Data", command=self.mine_data, font=self.default_font, corner_radius=8)
         self.mine_button.pack(pady=12, padx=10)
 
+        # Botão para parar o processo
         self.stop_button = ctk.CTkButton(self, text="Stop", command=self.stop_process, font=self.default_font, corner_radius=8, fg_color="red")
         self.stop_button.pack(pady=12, padx=10)
 
+        # Barra de progresso
         self.progress_bar = ctk.CTkProgressBar(self)
         self.progress_bar.pack(pady=12, padx=10)
         self.progress_bar.set(0)
 
+        # Rótulo para mostrar os resultados
         self.result_label = ctk.CTkLabel(self, text="", font=self.default_font)
         self.result_label.pack(pady=12, padx=10)
 
+    # Função para mostrar uma mensagem temporária
     def show_temp_message(self, message, duration=3000):
         temp_label = ctk.CTkLabel(self, text=message, font=self.default_font)
         temp_label.pack(pady=12, padx=10)
         self.after(duration, temp_label.destroy)
 
+    # Função para centralizar a janela na tela
     def center_window(self):
         self.update_idletasks()
         x = (self.winfo_screenwidth() // 2) - (self.width // 2)
         y = (self.winfo_screenheight() // 2) - (self.height // 2)
         self.geometry(f'{self.width}x{self.height}+{x}+{y}')
 
+    # Função para voltar ao menu
     def back_to_menu(self):
         self.menu_app.deiconify()
         self.destroy()
 
+    # Função de mineração de dados (a ser implementada nas subclasses)
     def mine_data(self):
         pass
 
+    # Função para parar o processo (a ser implementada nas subclasses)
     def stop_process(self):
         pass
 
+    # Função para executar a aplicação
     def run(self):
         self.mainloop()
-        
+
+# Classe para a aplicação de mineração de dados do Jira
 class JiraDataMinerApp(BaseView):
     def __init__(self, menu_app):
         super().__init__(menu_app, title="Jira Data Miner", url_label="Project URL", url_placeholder="Enter Jira project URL")
         self.controller = JiraController(self)
         self.center_window()
 
+        # Adiciona opções de mineração específicas do Jira
         self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
         self.epics_switch.pack(pady=5, padx=20, anchor='w')
         self.user_stories_switch = ctk.CTkSwitch(self.mining_options_frame, text="User Stories", font=self.default_font)
@@ -105,6 +124,7 @@ class JiraDataMinerApp(BaseView):
         self.enablers_switch = ctk.CTkSwitch(self.mining_options_frame, text="Enablers", font=self.default_font)
         self.enablers_switch.pack(pady=5, padx=20, anchor='w')
 
+    # Função para iniciar a mineração de dados
     def mine_data(self):
         url = self.url_entry.get()
         start_date = self.start_date_entry.get_date()
@@ -124,6 +144,7 @@ class JiraDataMinerApp(BaseView):
         if self.enablers_switch.get() == 1:
             task_types.append('Enabler')
 
+        # Função para coletar dados em uma thread separada
         def collect_data():
             try:
                 data = self.controller.mine_data(url, start_date, end_date, task_types) #Adicionar self.update_progress() como argumento
@@ -137,16 +158,19 @@ class JiraDataMinerApp(BaseView):
         thread = threading.Thread(target=collect_data)
         thread.start()
 
+    # Função para parar o processo
     def stop_process(self):
         self.controller.stop_process()
         self.result_label.configure(text="Process stopped by the user.")
 
+# Classe para a aplicação de mineração de dados do GitHub
 class GitHubRepoInfoApp(BaseView):
     def __init__(self, menu_app):
         super().__init__(menu_app, title="GitHub Data Miner", url_label="Repository URL", url_placeholder='Enter GitHub repository URL')
         self.controller = GitHubController(self) 
         self.center_window()
         
+        # Adiciona opções de mineração específicas do GitHub
         self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits", font=self.default_font)
         self.commits_switch.pack(pady=5, padx=20, anchor='w')
         self.issues_switch = ctk.CTkSwitch(self.mining_options_frame, text="Issues", font=self.default_font)
@@ -156,6 +180,7 @@ class GitHubRepoInfoApp(BaseView):
         self.branches_switch = ctk.CTkSwitch(self.mining_options_frame, text="Branches", font=self.default_font)
         self.branches_switch.pack(pady=5, padx=20, anchor='w')
 
+    # Função para iniciar a mineração de dados
     def mine_data(self):
         repo_url = self.url_entry.get()
         start_date = self.start_date_entry.get_date()
@@ -169,6 +194,7 @@ class GitHubRepoInfoApp(BaseView):
             'branches': self.branches_switch.get() == 1
         }
 
+        # Função para coletar dados em uma thread separada
         def collect_data():
             try:
                 total_tasks = sum(options.values())
@@ -189,14 +215,17 @@ class GitHubRepoInfoApp(BaseView):
         thread = threading.Thread(target=collect_data)
         thread.start()
 
+    # Função para atualizar a barra de progresso
     def update_progress(self, step):
         current_value = self.progress_bar.get()
         self.progress_bar.set(current_value + step)
 
+    # Função para parar o processo
     def stop_process(self):
         self.controller.stop_process()
         self.result_label.configure(text="Process stopped by the user.")
 
+# Classe personalizada de Listbox
 class CTkListbox(ctk.CTkFrame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
@@ -215,6 +244,7 @@ class CTkListbox(ctk.CTkFrame):
     def get(self, *args):
         return self.listbox.get(*args)
 
+# Classe para a aplicação de configurações
 class SettingsApp(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -225,12 +255,13 @@ class SettingsApp(ctk.CTk):
 
         self.button_color = "#1e1e1e"
 
-        # Load environment variables
+        # Carrega variáveis de ambiente
         self.env_file = '.env'
         self.load_env()
 
         self.create_widgets()
 
+    # Função para carregar as variáveis de ambiente
     def load_env(self):
         if not os.path.exists(self.env_file):
             with open(self.env_file, 'w') as f:
@@ -247,7 +278,7 @@ class SettingsApp(ctk.CTk):
         max_workers_str = env_values.get('MAX_WORKERS', '1')
         self.max_workers = int(max_workers_str) if max_workers_str else 1
 
-        # Ensure all required keys are present in the .env file
+        # Garante que todas as chaves necessárias estão presentes no arquivo .env
         self.ensure_env_key('TOKENS')
         self.ensure_env_key('USERNAMES')
         self.ensure_env_key('EMAIL')
@@ -255,12 +286,14 @@ class SettingsApp(ctk.CTk):
         self.ensure_env_key('SAVE_PATH')
         self.ensure_env_key('MAX_WORKERS')
 
+    # Função para garantir que uma chave está presente no arquivo .env
     def ensure_env_key(self, key):
         if key not in dotenv_values(self.env_file):
             set_key(self.env_file, key, '')
 
+    # Função para criar os widgets
     def create_widgets(self):
-        # GitHub Tokens
+        # Tokens do GitHub
         self.github_token_label = ctk.CTkLabel(self, text="GitHub Tokens:")
         self.github_token_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
 
@@ -273,7 +306,7 @@ class SettingsApp(ctk.CTk):
         self.github_token_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_github_token_window, fg_color=self.button_color)
         self.github_token_edit_button.grid(row=0, column=3, padx=10, pady=10)
 
-        # GitHub Users
+        # Usuários do GitHub
         self.github_user_label = ctk.CTkLabel(self, text="GitHub Users:")
         self.github_user_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
 
@@ -286,7 +319,7 @@ class SettingsApp(ctk.CTk):
         self.github_user_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_github_user_window, fg_color=self.button_color)
         self.github_user_edit_button.grid(row=1, column=3, padx=10, pady=10)
 
-        # API Email
+        # Email da API
         self.api_email_label = ctk.CTkLabel(self, text="API Email:")
         self.api_email_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
 
@@ -299,7 +332,7 @@ class SettingsApp(ctk.CTk):
         self.api_email_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_api_email_window, fg_color=self.button_color)
         self.api_email_edit_button.grid(row=2, column=3, padx=10, pady=10)
 
-        # API Token
+        # Token da API
         self.api_token_label = ctk.CTkLabel(self, text="API Token:")
         self.api_token_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
 
@@ -312,7 +345,7 @@ class SettingsApp(ctk.CTk):
         self.api_token_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_api_token_window, fg_color=self.button_color)
         self.api_token_edit_button.grid(row=3, column=3, padx=10, pady=10)
 
-        # Save Path
+        # Caminho de salvamento
         self.save_path_label = ctk.CTkLabel(self, text="Save Path:")
         self.save_path_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
 
@@ -323,7 +356,7 @@ class SettingsApp(ctk.CTk):
         self.save_path_button = ctk.CTkButton(self, text="Browse", command=self.browse_save_path, fg_color=self.button_color)
         self.save_path_button.grid(row=4, column=2, padx=10, pady=10)
 
-        # Max Workers
+        # Número máximo de trabalhadores
         self.max_workers_label = ctk.CTkLabel(self, text="Number of Max Workers:")
         self.max_workers_label.grid(row=5, column=0, padx=10, pady=10, sticky="w")
 
@@ -334,11 +367,13 @@ class SettingsApp(ctk.CTk):
         self.max_workers_add_button = ctk.CTkButton(self, text="Add", command=self.add_max_workers, fg_color=self.button_color)
         self.max_workers_add_button.grid(row=5, column=2, padx=10, pady=10)
 
+    # Função para atualizar o arquivo .env
     def update_env_file(self, key, value):
         set_key(self.env_file, key, value)
         if key == 'SAVE_PATH':
             self.save_path = value 
 
+    # Função para adicionar um token do GitHub
     def add_github_token(self):
         token = self.github_token_entry.get()
         if token:
@@ -348,9 +383,11 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter a GitHub token.")
 
+    # Função para abrir a janela de edição de tokens do GitHub
     def edit_github_token_window(self):
         self.open_listbox_window("Edit GitHub Tokens", self.tokens, self.add_github_token_to_listbox)
 
+    # Função para adicionar um usuário do GitHub
     def add_github_user(self):
         user = self.github_user_entry.get()
         if user:
@@ -360,9 +397,11 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter a GitHub user.")
 
+    # Função para abrir a janela de edição de usuários do GitHub
     def edit_github_user_window(self):
         self.open_listbox_window("Edit GitHub Users", self.usernames, self.add_github_user_to_listbox)
 
+    # Função para adicionar um email da API
     def add_api_email(self):
         email = self.api_email_entry.get()
         if email:
@@ -372,9 +411,11 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter an API email.")
 
+    # Função para abrir a janela de edição de emails da API
     def edit_api_email_window(self):
         self.open_listbox_window("Edit API Emails", self.emails, self.add_api_email_to_listbox)
 
+    # Função para adicionar um token da API
     def add_api_token(self):
         token = self.api_token_entry.get()
         if token:
@@ -384,9 +425,11 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
 
+    # Função para abrir a janela de edição de tokens da API
     def edit_api_token_window(self):
         self.open_listbox_window("Edit API Tokens", self.api_tokens, self.add_api_token_to_listbox)
 
+    # Função para navegar pelo caminho de salvamento
     def browse_save_path(self):
         path = filedialog.askdirectory()
         if path:
@@ -394,6 +437,7 @@ class SettingsApp(ctk.CTk):
             self.save_path_entry.insert(0, path)
             self.update_env_file('SAVE_PATH', path)
 
+    # Função para adicionar o número máximo de trabalhadores
     def add_max_workers(self):
         max_workers_str = self.max_workers_entry.get()
         try:
@@ -403,6 +447,7 @@ class SettingsApp(ctk.CTk):
         except ValueError:
             messagebox.showwarning("Warning", "Please enter a valid integer for Max Workers.")
 
+    # Função para abrir a janela de listbox
     def open_listbox_window(self, title, items, add_command):
         window = Toplevel(self)
         window.title(title)
@@ -420,11 +465,13 @@ class SettingsApp(ctk.CTk):
         remove_button = ctk.CTkButton(window, text="Remove", command=lambda: self.remove_item(listbox_frame.listbox), fg_color=self.button_color)
         remove_button.pack(side="right", padx=10, pady=10)
 
+    # Função para preencher a listbox
     def populate_listbox(self, listbox, items):
         for item in items:
             if item:
                 listbox.insert('end', item)
 
+    # Função para editar um item na listbox
     def edit_item(self, listbox):
         selected = listbox.curselection()
         if selected:
@@ -434,6 +481,7 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please select an item to edit.")
 
+    # Função para remover um item da listbox
     def remove_item(self, listbox):
         selected = listbox.curselection()
         if selected:
@@ -443,6 +491,7 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please select an item to remove.")
 
+    # Função para remover um item do arquivo .env
     def remove_from_env(self, item):
         if item in self.tokens:
             self.tokens.remove(item)
@@ -457,6 +506,7 @@ class SettingsApp(ctk.CTk):
             self.api_tokens.remove(item)
             self.update_env_file('API_TOKEN', ','.join(self.api_tokens))
 
+    # Função para adicionar um token do GitHub à listbox
     def add_github_token_to_listbox(self, listbox):
         token = self.github_token_entry.get()
         if token:
@@ -465,6 +515,7 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter a GitHub token.")
 
+    # Função para adicionar um usuário do GitHub à listbox
     def add_github_user_to_listbox(self, listbox):
         user = self.github_user_entry.get()
         if user:
@@ -473,6 +524,7 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter a GitHub user.")
 
+    # Função para adicionar um email da API à listbox
     def add_api_email_to_listbox(self, listbox):
         email = self.api_email_entry.get()
         if email:
@@ -481,6 +533,7 @@ class SettingsApp(ctk.CTk):
         else:
             messagebox.showwarning("Warning", "Please enter an API email.")
 
+    # Função para adicionar um token da API à listbox
     def add_api_token_to_listbox(self, listbox):
         token = self.api_token_entry.get()
         if token:
@@ -488,6 +541,8 @@ class SettingsApp(ctk.CTk):
             self.api_token_entry.delete(0, "end")
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
+
+# Classe principal da aplicação de mineração de dados
 class DataMinerApp():
     def __init__(self, root):
         self.root = root
@@ -510,6 +565,7 @@ class DataMinerApp():
 
         self.create_widgets()
 
+    # Função para centralizar a janela na tela
     def center_window(self):
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -517,8 +573,9 @@ class DataMinerApp():
         y = (screen_height - self.window_height) // 2
         self.root.geometry(f'{self.window_width}x{self.window_height}+{x}+{y}')
 
+    # Função para criar os widgets
     def create_widgets(self):
-        title_label = tk.Label(self.root, text="Selecione a Plataforma", font=self.bree_serif, fg="#606060", bg='#1e1e1e')
+        title_label = tk.Label(self.root, text="Select a Platform", font=self.bree_serif, fg="#606060", bg='#1e1e1e')
         title_label.pack(pady=30)
 
         frame = tk.Frame(self.root, bg='#1e1e1e')
@@ -530,6 +587,7 @@ class DataMinerApp():
         self.create_settings_button()
         self.create_close_button()
 
+    # Função para criar um botão de plataforma
     def create_platform_button(self, frame, image_path, label_text, row, column, click_command):
         try:
             image = Image.open(image_path)
@@ -556,6 +614,7 @@ class DataMinerApp():
 
         canvas.circle_photo = circle_photo
 
+    # Função para criar uma imagem circular
     def create_circle_image(self, diameter, color, bg_color):
         image = Image.new('RGBA', (diameter, diameter), bg_color)
         draw = ImageDraw.Draw(image)
@@ -569,6 +628,7 @@ class DataMinerApp():
                     image.putpixel((i, j), color + (alpha,))
         return image
 
+    # Função para criar um botão de configurações
     def create_settings_button(self):
         try:
             settings_image = Image.open("view/icons/settings_icon.png")
@@ -589,6 +649,7 @@ class DataMinerApp():
             self.image_refs['settings'] = settings_photo
             self.image_refs['settings_zoomed'] = settings_photo_zoomed
 
+    # Função para criar um botão de fechar
     def create_close_button(self):
         try:
             close_image = Image.open("view/icons/close.png")
@@ -608,20 +669,24 @@ class DataMinerApp():
             self.image_refs['close'] = close_photo
             self.image_refs['close_zoomed'] = close_photo_zoomed
 
+    # Função para lidar com o clique no botão do Jira
     def on_jira_click(self): 
         self.root.withdraw()  
         jira_app = JiraDataMinerApp(self.root)
         jira_app.run()
 
+    # Função para lidar com o clique no botão do GitHub
     def on_github_click(self): 
         self.root.withdraw()  
         gh_app = GitHubRepoInfoApp(self.root)
         gh_app.run()  
 
+    # Função para lidar com o clique no botão de configurações
     def on_settings_click(self):
         settings_app = SettingsApp()
         settings_app.mainloop()
 
+    # Função para aumentar o zoom de uma imagem ao passar o mouse
     def zoom_in(self, event, widget, image, label_text=None):
         if isinstance(widget, tk.Canvas):
             zoomed_image = image.resize((int(image.width * 1.1), int(image.height * 1.1)), Image.LANCZOS)
@@ -644,6 +709,7 @@ class DataMinerApp():
             widget.config(image=zoomed_photo)
             widget.image = zoomed_photo
 
+    # Função para diminuir o zoom de uma imagem ao retirar o mouse
     def zoom_out(self, event, widget, image):
         if isinstance(widget, tk.Canvas):
             widget.delete("all")

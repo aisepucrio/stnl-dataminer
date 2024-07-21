@@ -13,44 +13,53 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 from git import Repo, RemoteProgress, GitCommandError
 
+# Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
 
+# Classe para mostrar progresso ao clonar repositórios
 class CloneProgress(RemoteProgress):
     def __init__(self):
         super().__init__()
         self.pbar = tqdm()
     
+    # Atualiza barra de progresso
     def update(self, op_code, cur_count, max_count=None, message=''):
         self.pbar.total = max_count
         self.pbar.n = cur_count
         self.pbar.refresh()
 
+# Classe base para interações com APIs
 class BaseAPI:
     def __init__(self):
         load_dotenv()
 
+    # Método para obter o caminho de salvamento
     def get_save_path(self):
         load_dotenv()
         return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
 
+    # Método para salvar dados em formato JSON
     def save_to_json(self, data, filename):
         save_path = self.get_save_path()
         full_path = os.path.join(save_path, filename)
         with open(full_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
     
+    # Método para lidar com limite de requisições
     def handle_rate_limit(self, response):
         rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
         if rate_limit_remaining < 100:
             self.rotate_token()
         return rate_limit_remaining
 
+# Classe para interações com a API do Jira
 class JiraAPI(BaseAPI):
     def __init__(self):
         super().__init__()
         self.email = os.getenv('EMAIL')
         self.api_token = os.getenv('API_TOKEN')
 
+    # Extrai domínio e chave do projeto Jira a partir da URL
     def extract_jira_domain_and_key(self, url):
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
@@ -58,6 +67,7 @@ class JiraAPI(BaseAPI):
         project_key = path_parts[path_parts.index('projects') + 1] if 'projects' in path_parts else None
         return domain, project_key
 
+    # Busca campos customizados do Jira
     def search_custom_fields(self, jira_domain):
         url = f"https://{jira_domain}/rest/api/2/field"
         auth = (self.email, self.api_token)
@@ -66,6 +76,7 @@ class JiraAPI(BaseAPI):
         fields = response.json()
         return {field['id']: field['name'] for field in fields if field['id'].startswith('customfield')}
 
+    # Coleta tarefas do Jira
     def collect_tasks(self, jira_domain, project_key, task_type, start_date, end_date, stop_collecting):
         all_issues = []
         start_at = 0
@@ -92,8 +103,7 @@ class JiraAPI(BaseAPI):
             except Exception as e:
                 print(f"Error fetching data from URL: {url} - {str(e)}")
                 break
-            # print(response.json())
-            # break
+
             issues = response.json()['issues']
             all_issues.extend(issues)
             start_at += max_results
@@ -102,6 +112,7 @@ class JiraAPI(BaseAPI):
 
         return all_issues
 
+    # Remove campos nulos das tarefas
     def remove_null_fields(self, issues):
         if not issues:
             return issues
@@ -116,6 +127,7 @@ class JiraAPI(BaseAPI):
 
         return issues
 
+    # Substitui IDs por nomes amigáveis
     def replace_ids(self, issues, custom_field_mapping):
         for issue in issues:
             fields = issue['fields']
@@ -124,6 +136,7 @@ class JiraAPI(BaseAPI):
                     fields[field_name] = fields.pop(field_id)
         return issues
 
+# Classe para interações com a API do GitHub
 class GitHubAPI(BaseAPI):
     def __init__(self, view=None):
         super().__init__()
@@ -137,6 +150,7 @@ class GitHubAPI(BaseAPI):
         self.rotate_token()
         self.max_workers_default = int(os.getenv('MAX_WORKERS', '12'))
 
+    # Carrega tokens do GitHub
     def load_tokens(self):
         try:
             self.tokens = os.getenv('TOKENS').split(',')
@@ -149,11 +163,13 @@ class GitHubAPI(BaseAPI):
             print('No GitHub usernames found. Please add them to the .env')
             exit(1)
 
+    # Rotaciona tokens para evitar limite de requisições
     def rotate_token(self):
         self.current_token_index = (self.current_token_index + 1) % len(self.tokens)
         self.auth = (self.usernames[self.current_token_index], self.tokens[self.current_token_index])
         print(f"Rotated to token {self.current_token_index + 1}")
 
+    # Obtém nome do repositório a partir da URL
     def get_repo_name(self, repo_url):
         try:
             path = urlparse(repo_url).path
@@ -164,6 +180,7 @@ class GitHubAPI(BaseAPI):
         except Exception as e:
             raise ValueError("Error parsing repository URL. Check the format and try again.")
 
+    # Obtém total de páginas de resultados
     def get_total_pages(self, url, params=None):
         max_retries = len(self.tokens)
         attempts = 0
@@ -196,6 +213,7 @@ class GitHubAPI(BaseAPI):
                 raise Exception(f'Unexpected error: {str(e)}')
         raise Exception("All tokens have reached the limit.")
 
+    # Obtém todas as páginas de resultados de uma requisição
     def get_all_pages(self, url, desc, params=None, date_key=None, start_date=None, end_date=None, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
@@ -211,7 +229,7 @@ class GitHubAPI(BaseAPI):
             print(e)
             return results
 
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:  # Mudança aqui
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = []
             for page in range(1, total_pages + 1):
                 if params:
@@ -232,6 +250,7 @@ class GitHubAPI(BaseAPI):
 
         return results
 
+    # Busca dados de uma página
     def fetch_page_data(self, url, date_key, start_date, end_date):
         max_retries = len(self.tokens)
         attempts = 0
@@ -259,6 +278,7 @@ class GitHubAPI(BaseAPI):
         print("All tokens have reached the limit. Fetch")
         return []
 
+    # Obtém comentários de um issue ou pull request, incluindo o comentário inicial
     def get_comments_with_initial(self, issue_url, initial_comment, issue_number, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
@@ -275,6 +295,7 @@ class GitHubAPI(BaseAPI):
         } for comment in comments if 'user' in comment and 'login' in comment['user'] and 'body' in comment and 'created_at' in comment])
         return essential_comments
 
+    # Obtém commits de um repositório no GitHub
     def get_commits(self, repo_name, start_date, end_date, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
@@ -295,11 +316,13 @@ class GitHubAPI(BaseAPI):
 
         return essential_commits
     
+    # Obtém diretório inicial do usuário
     @staticmethod
     def user_home_directory():
         home_directory = os.path.expanduser("~")
         return home_directory
 
+    # Verifica se o repositório já existe no diretório especificado
     def repo_exists(self, repo_name: str, clone_path: str | None = None) -> bool:
         if clone_path is None:
             clone_path = GitHubAPI.user_home_directory() + '/GitHubClones'
@@ -323,6 +346,7 @@ class GitHubAPI(BaseAPI):
             self.ask_to_update_repo(clone_path)
             return True
 
+    # Pergunta ao usuário se deseja atualizar o repositório existente
     def ask_to_update_repo(self, repo_path):
         popup = ctk.CTkToplevel()
         popup.title("Repository Exists")
@@ -339,6 +363,7 @@ class GitHubAPI(BaseAPI):
 
         popup.wait_window()
 
+    # Atualiza o repositório local
     def update_repo(self, repo_path, popup):
         try:
             repo = Repo(repo_path)
@@ -349,11 +374,12 @@ class GitHubAPI(BaseAPI):
             print(f'Error updating repo: {e}')
         popup.destroy()
 
+    # Converte data para formato ISO 8601
     def convert_to_iso8601(self, date):
         return date.isoformat()
 
+    # Obtém commits usando a biblioteca Pydriller
     def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None  = None) -> list:
-
         start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
         end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
 
@@ -380,6 +406,7 @@ class GitHubAPI(BaseAPI):
 
         return essential_commits
     
+    # Obtém issues do repositório
     def get_issues(self, repo_name, start_date, end_date, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
@@ -409,6 +436,7 @@ class GitHubAPI(BaseAPI):
                 })
         return essential_issues
 
+    # Obtém pull requests do repositório
     def get_pull_requests(self, repo_name, start_date, end_date, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
@@ -438,6 +466,7 @@ class GitHubAPI(BaseAPI):
                 })
         return essential_pull_requests
 
+    # Obtém branches do repositório
     def get_branches(self, repo_name, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
