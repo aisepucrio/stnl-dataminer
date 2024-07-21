@@ -467,12 +467,16 @@ class GitHubAPI(BaseAPI):
                     'created_at': pr['created_at']
                 }
                 comments = self.get_comments_with_initial(pr_comments_url, initial_comment, pr['number'], max_workers)
+                
+                labels = [label['name'] for label in pr.get('labels', [])]
+
                 essential_pull_requests.append({
                     'number': pr['number'],
                     'title': pr['title'],
                     'state': pr['state'],
                     'creator': pr['user']['login'],
-                    'comments': comments
+                    'comments': comments,
+                    'labels': labels  # Adicionando labels ao dicionário
                 })
         return essential_pull_requests
 

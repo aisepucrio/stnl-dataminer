@@ -40,11 +40,6 @@ def convert_to_iso8601(date):
 
 def get_commits_pydriller(repo_name: str, start_date: str, end_date: str, max_workers: int = 4, clone_path: str = user_home_directory()) -> list:
 
-    #TODO Adicionar um repo_pardrão que corresponda a pasta root do usuário independete do OS
-    #TODO Adicionar uma lógica de if else usando o repo_exists para verificar se vai utilizar um repo já baixado ou baixar outo
-    #TODO Adicionar um aviso que ao utilizar um repo já baixado, o mesmo pode estar desatualizado
-    #TODO Adicionar a opção do usuário poder escolher se quer atualizar o repo já baixado ou não
-
     start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
     end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
 
