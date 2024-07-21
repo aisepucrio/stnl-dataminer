@@ -9,7 +9,7 @@ from tqdm import tqdm
 from pydriller import Repository
 from urllib.parse import urlparse, urlencode
 from datetime import datetime
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 from git import Repo, RemoteProgress, GitCommandError
 
@@ -211,7 +211,7 @@ class GitHubAPI(BaseAPI):
             print(e)
             return results
 
-        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:  # Mudança aqui
             futures = []
             for page in range(1, total_pages + 1):
                 if params:

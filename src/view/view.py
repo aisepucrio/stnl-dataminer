@@ -18,6 +18,7 @@ class BaseView(ctk.CTk):
         self.title(title)
         self.width = 550
         self.height = 770
+        self.geometry(f'{self.width}x{self.height}')
         self.configure(bg="black")
 
         # Adicionar botão de voltar
@@ -214,13 +215,11 @@ class CTkListbox(ctk.CTkFrame):
     def get(self, *args):
         return self.listbox.get(*args)
 
-class SettingsApp(BaseView, ctk.CTk):
+class SettingsApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Settings")
         self.geometry("705x295")  # Aumenta a altura para o novo campo
-        self.center_window()
-        
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
 
@@ -489,7 +488,6 @@ class SettingsApp(BaseView, ctk.CTk):
             self.api_token_entry.delete(0, "end")
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
-
 class DataMinerApp():
     def __init__(self, root):
         self.root = root
