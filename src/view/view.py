@@ -16,7 +16,8 @@ class BaseView(ctk.CTk):
 
         self.menu_app = menu_app
         self.title(title)
-        self.geometry("550x770")
+        self.width = 550
+        self.height = 770
         self.configure(bg="black")
 
         # Adicionar botão de voltar
@@ -67,13 +68,9 @@ class BaseView(ctk.CTk):
 
     def center_window(self):
         self.update_idletasks()
-        width = self.winfo_width()
-        height = self.winfo_height()
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
-        x = (screen_width - width) // 2
-        y = (screen_height - height) // 2
-        self.geometry(f"{width}x{height}+{x}+{y}")
+        x = (self.winfo_screenwidth() // 2) - (self.width // 2)
+        y = (self.winfo_screenheight() // 2) - (self.height // 2)
+        self.geometry(f'{self.width}x{self.height}+{x}+{y}')
 
     def back_to_menu(self):
         self.menu_app.deiconify()
