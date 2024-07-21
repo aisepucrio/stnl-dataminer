@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import datetime
 import customtkinter as ctk
+import regex as re
 from tqdm import tqdm
 from pydriller import Repository
 from urllib.parse import urlparse, urlencode
@@ -150,10 +151,19 @@ class GitHubAPI(BaseAPI):
         self.rotate_token()
         self.max_workers_default = int(os.getenv('MAX_WORKERS', '12'))
 
+    # Função para validar token do GitHub
+    def validate_tokens(self, tokens):
+        github_token_regex = re.compile(r'ghp_[a-zA-Z0-9]{36}')
+        for token in tokens:
+            if not github_token_regex.match(token):
+                print(f"Invalid GitHub token: '{token}'. Please check the .env file.")
+                exit(1)
+
     # Carrega tokens do GitHub
     def load_tokens(self):
         try:
             self.tokens = os.getenv('TOKENS').split(',')
+            self.validate_tokens(self.tokens)
         except Exception as e:
             print('No GitHub tokens found. Please add them to the .env')
             exit(1)
