@@ -197,6 +197,9 @@ class GitHubRepoInfoApp(BaseView):
         # Função para coletar dados em uma thread separada
         def collect_data():
             try:
+
+                self.result_label.configure(text="Retrieving information, please wait...")
+
                 total_tasks = sum(options.values())
                 self.progress_bar.set(0)
                 progress_step = 1 / total_tasks if total_tasks > 0 else 1
