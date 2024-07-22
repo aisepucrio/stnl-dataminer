@@ -112,7 +112,7 @@ class JiraController(BaseController):
         self.api = JiraAPI()
 
     # Método para minerar dados do Jira
-    def mine_data(self, url, start_date, end_date, task_types):
+    def mine_data(self, url, start_date, end_date, task_types, update_progress_callback=None, progress_step=None):
         jira_domain, project_key = self.api.extract_jira_domain_and_key(url)
         start_date = self.view.start_date_entry.get_date()
         end_date = self.view.end_date_entry.get_date()
@@ -136,9 +136,15 @@ class JiraController(BaseController):
             tasks = self.api.remove_null_fields(tasks)
             tasks = self.api.replace_ids(tasks, custom_field_mapping)
             all_issues[task_type] = tasks
+
+            if update_progress_callback:
+                self.view.after(0, update_progress_callback, progress_step)
+
             print(f"Collected {len(tasks)} {task_type}(s)")
 
         # Salva os dados coletados em um arquivo JSON
         save_path = self.get_save_path()
         self.api.save_to_json(all_issues, os.path.join(save_path, f'{project_key.lower()}_issues.json'))
         messagebox.showinfo("Success", f"Data has been successfully mined and saved to {os.path.join(save_path, project_key.lower() + '_issues.json')}")
+
+        return all_issues

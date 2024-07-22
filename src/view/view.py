@@ -30,27 +30,27 @@ class BaseView(ctk.CTk):
             corner_radius=8, fg_color="#2e2e2e", hover_color="#4a4a4a",
             text_color="#ffffff", width=80, height=32, font=("Segoe UI", 12, "bold")
         )
-        self.back_button.pack(pady=12, padx=10, anchor='nw')
+        self.back_button.pack(pady=7, padx=10, anchor='nw')
 
         # Define a fonte padrão
         self.default_font = ctk.CTkFont(family="Segoe UI", size=12)
 
         # Rótulo e campo de entrada para URL
         self.url_label = ctk.CTkLabel(self, text=url_label, font=self.default_font)
-        self.url_label.pack(pady=10)
+        self.url_label.pack(pady=5)
         self.url_entry = ctk.CTkEntry(self, placeholder_text=url_placeholder, width=400, font=self.default_font)
-        self.url_entry.pack(pady=12, padx=10)
+        self.url_entry.pack(pady=7, padx=10)
 
         # Rótulos e campos de entrada para datas
         self.start_date_label = ctk.CTkLabel(self, text="Start Date (DD/MM/YYYY)", font=self.default_font)
-        self.start_date_label.pack(pady=12, padx=10)
+        self.start_date_label.pack(pady=5, padx=10)
         self.start_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
-        self.start_date_entry.pack(pady=12, padx=10)
+        self.start_date_entry.pack(pady=7, padx=10)
 
         self.end_date_label = ctk.CTkLabel(self, text="End Date (DD/MM/YYYY)", font=self.default_font)
-        self.end_date_label.pack(pady=12, padx=10)
+        self.end_date_label.pack(pady=5, padx=10)
         self.end_date_entry = DateEntry(self, date_pattern='dd/MM/yyyy', width=12, background='darkblue', foreground='white', borderwidth=2)
-        self.end_date_entry.pack(pady=12, padx=10)
+        self.end_date_entry.pack(pady=7, padx=10)
 
         # Frame para as opções de mineração
         self.mining_options_frame = ctk.CTkFrame(self)
@@ -58,11 +58,11 @@ class BaseView(ctk.CTk):
 
         # Botão para iniciar a mineração de dados
         self.mine_button = ctk.CTkButton(self, text="Mine Data", command=self.mine_data, font=self.default_font, corner_radius=8)
-        self.mine_button.pack(pady=12, padx=10)
+        self.mine_button.pack(pady=7, padx=10)
 
         # Botão para parar o processo
         self.stop_button = ctk.CTkButton(self, text="Stop", command=self.stop_process, font=self.default_font, corner_radius=8, fg_color="red")
-        self.stop_button.pack(pady=12, padx=10)
+        self.stop_button.pack(pady=7, padx=10)
 
         # Barra de progresso
         self.progress_bar = ctk.CTkProgressBar(self)
@@ -147,16 +147,27 @@ class JiraDataMinerApp(BaseView):
         # Função para coletar dados em uma thread separada
         def collect_data():
             try:
-                data = self.controller.mine_data(url, start_date, end_date, task_types) #Adicionar self.update_progress() como argumento
-                # message = ""
-                # for task_type, tasks in data.items():
-                #     message += f"{task_type}: {len(tasks)}\n"
-                # self.result_label.configure(text=message.strip())
+                self.result_label.configure(text="Retrieving information, please wait...")
+
+                total_tasks = len(task_types)
+                self.progress_bar.set(0)
+                progress_step = 1 / total_tasks if total_tasks > 0 else 1
+
+                data = self.controller.mine_data(url, start_date, end_date, task_types, self.update_progress, progress_step)
+                message = ""
+                for task_type, tasks in data.items():
+                    message += f"{task_type}: {len(tasks)}\n"
+                self.result_label.configure(text=message.strip())
             except ValueError as ve:
                 self.result_label.configure(text=str(ve))
                 
         thread = threading.Thread(target=collect_data)
         thread.start()
+
+    # Função para atualizar a barra de progresso
+    def update_progress(self, step):
+        current_value = self.progress_bar.get()
+        self.progress_bar.set(current_value + step)
 
     # Função para parar o processo
     def stop_process(self):
