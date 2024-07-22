@@ -180,6 +180,9 @@ class GitHubRepoInfoApp(BaseView):
         super().__init__(menu_app, title="GitHub Data Miner", url_label="Repository URL", url_placeholder='Enter GitHub repository URL')
         self.controller = GitHubController(self) 
         self.center_window()
+
+        # Definir valor padrão para o campo de entrada de URL
+        self.url_entry.insert(0, "https://github.com/aisepucrio/stnl-dataminer")
         
         # Adiciona opções de mineração específicas do GitHub
         self.commits_switch = ctk.CTkSwitch(self.mining_options_frame, text="Commits", font=self.default_font)
