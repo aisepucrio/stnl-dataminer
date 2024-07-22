@@ -14,6 +14,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 from git import Repo, RemoteProgress, GitCommandError
+from tkinter import messagebox
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -156,8 +157,10 @@ class GitHubAPI(BaseAPI):
     def validate_tokens(self, tokens):
         github_token_regex = re.compile(r'ghp_[a-zA-Z0-9]{36}')
         for token in tokens:
+            print(f"Validating GitHub token: {token}")
             if not github_token_regex.match(token):
                 print(f"Invalid GitHub token: '{token}'. Please check the .env file.")
+                messagebox.showinfo("Error", f"Invalid GitHub token: '{token}'. Please check the .env file.")
                 exit(1)
 
     # Carrega tokens do GitHub

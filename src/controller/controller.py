@@ -1,9 +1,9 @@
+import os
+import json
 from model.api import GitHubAPI, JiraAPI
 from database.database import Database
 from dotenv import load_dotenv
 from tkinter import messagebox
-import os
-import json
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
