@@ -344,11 +344,12 @@ class GitHubAPI(BaseAPI):
             print(f'\nCreating directory: {clone_path}\n')
             os.makedirs(clone_path)
             
-            if self.view:
-                self.view.show_temp_message("Por favor aguarde, clonando o repositório...")
-            
             print(f'\nCloning repo: {repo_url}\n')
-            Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
+            
+            while Repo.clone_from(repo_url, clone_path, progress=CloneProgress()):
+                if self.view:
+                    self.view.show_temp_message("Please wait while the repository is being cloned...")
+            
             print(f'\nRepo cloned: {clone_path}\n')
             return False
         else:
