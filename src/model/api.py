@@ -333,6 +333,14 @@ class GitHubAPI(BaseAPI):
         home_directory = os.path.expanduser("~")
         return home_directory
 
+    # Função para clonar o repositório
+    def clone_repo(self, repo_url, clone_path):
+        if self.view:
+            self.view.show_temp_message("Por favor aguarde, clonando o repositório...")
+        Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
+        if self.view:
+            self.view.show_temp_message("Clonagem concluída.")
+
     # Verifica se o repositório já existe no diretório especificado
     def repo_exists(self, repo_name: str, clone_path: str | None = None) -> bool:
         if clone_path is None:
