@@ -336,10 +336,10 @@ class GitHubAPI(BaseAPI):
     # Função para clonar o repositório
     def clone_repo(self, repo_url, clone_path):
         if self.view:
-            self.view.show_temp_message("Por favor aguarde, clonando o repositório...")
+            self.view.show_temp_message("Please wait while cloning the repository...")
         Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
         if self.view:
-            self.view.show_temp_message("Clonagem concluída.")
+            self.view.show_temp_message("Cloning complete.")
 
     # Verifica se o repositório já existe no diretório especificado
     def repo_exists(self, repo_name: str, clone_path: str | None = None) -> bool:
