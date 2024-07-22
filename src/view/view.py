@@ -259,26 +259,38 @@ class SettingsApp(ctk.CTk):
         self.button_color = "#1e1e1e"
 
         # Carrega variáveis de ambiente
-        self.env_file = '.env'
+        self.env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
         self.load_env()
 
         self.create_widgets()
 
     # Função para carregar as variáveis de ambiente
     def load_env(self):
+        default_env_content = """TOKENS=
+USERNAMES=
+EMAIL=
+API_TOKEN=
+SAVE_PATH=
+MAX_WORKERS='4'
+PG_HOST=opus.servehttp.com
+PG_DATABASE=aise-stone
+PG_USER=aise-stone
+PG_PASSWORD=#St@n3L@b2@24!
+PG_PORT=54321
+"""
         if not os.path.exists(self.env_file):
             with open(self.env_file, 'w') as f:
-                f.write('TOKENS=\nUSERNAMES=\nEMAIL=\nAPI_TOKEN=\nSAVE_PATH=\nMAX_WORKERS=1\n')
-        
+                f.write(default_env_content)
+
         load_dotenv(self.env_file)
-        
+
         env_values = dotenv_values(self.env_file)
         self.tokens = env_values.get('TOKENS', '').split(',')
         self.usernames = env_values.get('USERNAMES', '').split(',')
         self.emails = env_values.get('EMAIL', '').split(',')
         self.api_tokens = env_values.get('API_TOKEN', '').split(',')
-        self.save_path = env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Desktop"))
-        max_workers_str = env_values.get('MAX_WORKERS', '1')
+        self.save_path = env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
+        max_workers_str = env_values.get('MAX_WORKERS', '4')
         self.max_workers = int(max_workers_str) if max_workers_str else 1
 
         # Garante que todas as chaves necessárias estão presentes no arquivo .env
@@ -287,12 +299,17 @@ class SettingsApp(ctk.CTk):
         self.ensure_env_key('EMAIL')
         self.ensure_env_key('API_TOKEN')
         self.ensure_env_key('SAVE_PATH')
-        self.ensure_env_key('MAX_WORKERS')
+        self.ensure_env_key('MAX_WORKERS', '4')
+        self.ensure_env_key('PG_HOST', 'opus.servehttp.com')
+        self.ensure_env_key('PG_DATABASE', 'aise-stone')
+        self.ensure_env_key('PG_USER', 'aise-stone')
+        self.ensure_env_key('PG_PASSWORD', '#St@n3L@b2@24!')
+        self.ensure_env_key('PG_PORT', '54321')
 
     # Função para garantir que uma chave está presente no arquivo .env
-    def ensure_env_key(self, key):
+    def ensure_env_key(self, key, default_value=''):
         if key not in dotenv_values(self.env_file):
-            set_key(self.env_file, key, '')
+            set_key(self.env_file, key, default_value)
 
     # Função para criar os widgets
     def create_widgets(self):
@@ -372,15 +389,27 @@ class SettingsApp(ctk.CTk):
 
     # Função para atualizar o arquivo .env
     def update_env_file(self, key, value):
+        value = value.strip().strip(',')
         set_key(self.env_file, key, value)
-        if key == 'SAVE_PATH':
-            self.save_path = value 
+        if key == 'TOKENS':
+            self.tokens = [t.strip() for t in value.split(',')] if value else []
+        elif key == 'USERNAMES':
+            self.usernames = [u.strip() for u in value.split(',')] if value else []
+        elif key == 'EMAIL':
+            self.emails = [e.strip() for e in value.split(',')] if value else []
+        elif key == 'API_TOKEN':
+            self.api_tokens = [a.strip() for a in value.split(',')] if value else []
+        elif key == 'SAVE_PATH':
+            self.save_path = value
 
     # Função para adicionar um token do GitHub
     def add_github_token(self):
-        token = self.github_token_entry.get()
+        token = self.github_token_entry.get().strip()
         if token:
-            self.tokens.append(token)
+            if not self.tokens or (len(self.tokens) == 1 and self.tokens[0] == ''):
+                self.tokens = [token]
+            else:
+                self.tokens.append(token)
             self.update_env_file('TOKENS', ','.join(self.tokens))
             self.github_token_entry.delete(0, "end")
         else:
@@ -392,9 +421,12 @@ class SettingsApp(ctk.CTk):
 
     # Função para adicionar um usuário do GitHub
     def add_github_user(self):
-        user = self.github_user_entry.get()
+        user = self.github_user_entry.get().strip()
         if user:
-            self.usernames.append(user)
+            if not self.usernames or (len(self.usernames) == 1 and self.usernames[0] == ''):
+                self.usernames = [user]
+            else:
+                self.usernames.append(user)
             self.update_env_file('USERNAMES', ','.join(self.usernames))
             self.github_user_entry.delete(0, "end")
         else:
@@ -406,9 +438,12 @@ class SettingsApp(ctk.CTk):
 
     # Função para adicionar um email da API
     def add_api_email(self):
-        email = self.api_email_entry.get()
+        email = self.api_email_entry.get().strip()
         if email:
-            self.emails.append(email)
+            if not self.emails or (len(self.emails) == 1 and self.emails[0] == ''):
+                self.emails = [email]
+            else:
+                self.emails.append(email)
             self.update_env_file('EMAIL', ','.join(self.emails))
             self.api_email_entry.delete(0, "end")
         else:
@@ -420,9 +455,12 @@ class SettingsApp(ctk.CTk):
 
     # Função para adicionar um token da API
     def add_api_token(self):
-        token = self.api_token_entry.get()
+        token = self.api_token_entry.get().strip()
         if token:
-            self.api_tokens.append(token)
+            if not self.api_tokens or (len(self.api_tokens) == 1 and self.api_tokens[0] == ''):
+                self.api_tokens = [token]
+            else:
+                self.api_tokens.append(token)
             self.update_env_file('API_TOKEN', ','.join(self.api_tokens))
             self.api_token_entry.delete(0, "end")
         else:
