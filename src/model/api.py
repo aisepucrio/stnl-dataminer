@@ -390,8 +390,16 @@ class GitHubAPI(BaseAPI):
 
     # Obtém commits usando a biblioteca Pydriller
     def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None  = None) -> list:
-        start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
-        end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
+
+        if start_date:
+            start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
+        else:
+            start_date = datetime.min
+
+        if end_date:
+            end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
+        else:
+            end_date = datetime.now()
 
         if max_workers is None:
             max_workers = self.max_workers_default

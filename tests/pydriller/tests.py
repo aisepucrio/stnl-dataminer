@@ -38,33 +38,45 @@ def repo_exists(repo_name: str, clone_path: str = user_home_directory() + '/GitH
 def convert_to_iso8601(date):
     return date.isoformat()
 
-def get_commits_pydriller(repo_name: str, start_date: str, end_date: str, max_workers: int = 4, clone_path: str = user_home_directory()) -> list:
-
-    start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
-    end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
-
-    if repo_exists(repo_name, clone_path):
-        repo = Repository(clone_path + '/' + repo_name.split('/')[1], since=start_date, to=end_date).traverse_commits()
+def get_commits_pydriller(repo_name: str, 
+                          start_date: str = None, 
+                          end_date: str = None, 
+                          max_workers: int = 4, 
+                          clone_path: str = user_home_directory()) -> list:
     
+    if start_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
     else:
-        repo_url = 'https://github.com/' + repo_name
-        repo = Repository(repo_url, since=start_date, to=end_date).traverse_commits()
-
+        start_date = datetime.min  # Define start_date como a data mínima possível
+    
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
+    else:
+        end_date = datetime.now()  # Define end_date como a data e hora atuais
+    
+    if repo_exists(repo_name, clone_path):
+        print('Repositório já clonado')
+        repo_path = os.path.join(clone_path, repo_name.split('/')[1])
+    else:
+        print('Clonando repositório...')
+        repo_path = 'https://github.com/' + repo_name
+    
+    repo = Repository(repo_path, since=start_date, to=end_date).traverse_commits()
+    
     commits = list(repo)
-
+    
     essential_commits = [{
         'sha': commit.hash,
         'message': commit.msg,
         'date': convert_to_iso8601(commit.author_date), 
         'author': commit.author.name
     } for commit in commits]
-
+    
     with open('commits.json', 'w') as f:
         json.dump(essential_commits, f, indent=4)
-
+    
     return essential_commits
-
 # Exemplo de uso
-commits = get_commits_pydriller(repo_name='brenonevs/prs-pricemonitor', start_date='2023-07-15T00:00:01Z', end_date='2024-07-17T23:59:59Z')
+commits = get_commits_pydriller(repo_name='aisepucrio/stnl-dataminer', start_date='2024-07-18T00:00:01Z')
 
 
