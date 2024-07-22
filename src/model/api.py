@@ -6,6 +6,7 @@ import tempfile
 import datetime
 import customtkinter as ctk
 import regex as re
+import threading
 from tqdm import tqdm
 from pydriller import Repository
 from urllib.parse import urlparse, urlencode
@@ -345,17 +346,16 @@ class GitHubAPI(BaseAPI):
             os.makedirs(clone_path)
             
             print(f'\nCloning repo: {repo_url}\n')
-            
-            while Repo.clone_from(repo_url, clone_path, progress=CloneProgress()):
-                if self.view:
-                    self.view.show_temp_message("Please wait while the repository is being cloned...")
+            clone_thread = threading.Thread(target=self.clone_repo, args=(repo_url, clone_path))
+            clone_thread.start()
+            clone_thread.join()  # Espera a thread terminar
             
             print(f'\nRepo cloned: {clone_path}\n')
             return False
         else:
             print(f'\nRepo already exists: {clone_path}\n')
             self.ask_to_update_repo(clone_path)
-            return True
+            return True 
 
     # Pergunta ao usuário se deseja atualizar o repositório existente
     def ask_to_update_repo(self, repo_path):
