@@ -652,6 +652,10 @@ class DataMinerApp():
             self.image_refs['settings'] = settings_photo
             self.image_refs['settings_zoomed'] = settings_photo_zoomed
 
+    # Função para sair da aplicação
+    def exit(self):
+        exit(1)
+
     # Função para criar um botão de fechar
     def create_close_button(self):
         try:
@@ -665,7 +669,7 @@ class DataMinerApp():
             close_photo = None
 
         if close_photo:
-            close_button = tk.Button(self.root, image=close_photo, command=self.root.quit, bg='#1e1e1e', bd=0, highlightthickness=0, activebackground='#1e1e1e')
+            close_button = tk.Button(self.root, image=close_photo, command=self.exit, bg='#1e1e1e', bd=0, highlightthickness=0, activebackground='#1e1e1e')
             close_button.place(relx=0.98, rely=0.02, anchor='ne')
             close_button.bind("<Enter>", lambda e: close_button.config(image=close_photo_zoomed))
             close_button.bind("<Leave>", lambda e: close_button.config(image=close_photo))
