@@ -30,7 +30,7 @@ Obtenha informações detalhadas sobre os diferentes tipos de issues do Jira, in
 
 ### Pré-requisitos
 
-Antes de iniciar, certifique-se de que você tem Python 3.8 ou superior instalado em seu sistema.
+Antes de iniciar, certifique-se de que você tem Python 3.11 ou superior instalado em seu sistema.
 
 ### Instalação
 
@@ -38,7 +38,7 @@ Siga os passos abaixo para configurar o ambiente e executar a ferramenta:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/aisepucrio/stnl-jiradatamining.git
+git clone https://github.com/aisepucrio/stnl-dataminer.git
 cd stnl-jiradatamining
 
 # Instale os pré-requisitos
