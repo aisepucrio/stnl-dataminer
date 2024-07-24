@@ -39,7 +39,7 @@ Siga os passos abaixo para configurar o ambiente e executar a ferramenta:
 ```bash
 # Clone o repositório
 git clone https://github.com/aisepucrio/stnl-dataminer.git
-cd stnl-jiradatamining
+cd stnl-dataminer
 
 # Instale os pré-requisitos
 pip install -r requirements.txt
