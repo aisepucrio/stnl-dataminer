@@ -265,7 +265,7 @@ class SettingsApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Settings")
-        self.geometry("705x295")
+        self.geometry("800x600")  # Definindo dimensões específicas da janela
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
 
@@ -279,7 +279,8 @@ class SettingsApp(ctk.CTk):
         self.load_env()
 
         self.create_widgets()
-        self.center_window()
+
+        self.center_window()  # Centraliza a janela após criação dos widgets
 
         self.bind('<Unmap>', self.check_window_state)
         self.bind('<Map>', self.check_window_state)
@@ -287,8 +288,8 @@ class SettingsApp(ctk.CTk):
 
     def center_window(self):
         self.update_idletasks()
-        width = self.winfo_width()
-        height = self.winfo_height()
+        width = 700  # Largura desejada
+        height = 300  # Altura desejada
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
