@@ -1,4 +1,3 @@
-# Importando as bibliotecas e módulos necessários
 import customtkinter as ctk
 import threading
 import tkinter as tk
@@ -266,7 +265,7 @@ class SettingsApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Settings")
-        self.geometry("705x295")  # Aumenta a altura para o novo campo
+        self.geometry("705x295")
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
 
@@ -274,7 +273,6 @@ class SettingsApp(ctk.CTk):
 
         # Carrega variáveis de ambiente
         self.env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
-
         self.load_env()
 
         self.create_widgets()
@@ -300,7 +298,6 @@ PG_PORT=54321
         load_dotenv(self.env_file)
 
         env_values = dotenv_values(self.env_file)
-
         self.tokens = env_values.get('TOKENS', '').split(',')
         self.usernames = env_values.get('USERNAMES', '').split(',')
         self.emails = env_values.get('EMAIL', '').split(',')
@@ -336,10 +333,10 @@ PG_PORT=54321
         self.github_token_entry = ctk.CTkEntry(self, width=200)
         self.github_token_entry.grid(row=0, column=1, padx=10, pady=10)
 
-        self.github_token_add_button = ctk.CTkButton(self, text="Add", command=self.add_github_token, fg_color=self.button_color)
-        self.github_token_add_button.grid(row=0, column=2, padx=10, pady=10)
+        self.github_token_user_add_button = ctk.CTkButton(self, text="Add Token and User", command=self.add_github_token_and_user, fg_color=self.button_color)
+        self.github_token_user_add_button.grid(row=0, column=2, padx=10, pady=10)
 
-        self.github_token_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_github_token_window, fg_color=self.button_color)
+        self.github_token_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('GitHub Token and User', self.github_token_edit_button), fg_color=self.button_color)
         self.github_token_edit_button.grid(row=0, column=3, padx=10, pady=10)
 
         # Usuários do GitHub
@@ -349,12 +346,6 @@ PG_PORT=54321
         self.github_user_entry = ctk.CTkEntry(self, width=200)
         self.github_user_entry.grid(row=1, column=1, padx=10, pady=10)
 
-        self.github_user_add_button = ctk.CTkButton(self, text="Add", command=self.add_github_user, fg_color=self.button_color)
-        self.github_user_add_button.grid(row=1, column=2, padx=10, pady=10)
-
-        self.github_user_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_github_user_window, fg_color=self.button_color)
-        self.github_user_edit_button.grid(row=1, column=3, padx=10, pady=10)
-
         # Email da API
         self.api_email_label = ctk.CTkLabel(self, text="API Email:")
         self.api_email_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
@@ -362,10 +353,10 @@ PG_PORT=54321
         self.api_email_entry = ctk.CTkEntry(self, width=200)
         self.api_email_entry.grid(row=2, column=1, padx=10, pady=10)
 
-        self.api_email_add_button = ctk.CTkButton(self, text="Add", command=self.add_api_email, fg_color=self.button_color)
-        self.api_email_add_button.grid(row=2, column=2, padx=10, pady=10)
+        self.api_email_token_add_button = ctk.CTkButton(self, text="Add Email and Token", command=self.add_api_email_and_token, fg_color=self.button_color)
+        self.api_email_token_add_button.grid(row=2, column=2, padx=10, pady=10)
 
-        self.api_email_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_api_email_window, fg_color=self.button_color)
+        self.api_email_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('API Email and Token', self.api_email_edit_button), fg_color=self.button_color)
         self.api_email_edit_button.grid(row=2, column=3, padx=10, pady=10)
 
         # Token da API
@@ -374,12 +365,6 @@ PG_PORT=54321
 
         self.api_token_entry = ctk.CTkEntry(self, width=200)
         self.api_token_entry.grid(row=3, column=1, padx=10, pady=10)
-
-        self.api_token_add_button = ctk.CTkButton(self, text="Add", command=self.add_api_token, fg_color=self.button_color)
-        self.api_token_add_button.grid(row=3, column=2, padx=10, pady=10)
-
-        self.api_token_edit_button = ctk.CTkButton(self, text="Edit", command=self.edit_api_token_window, fg_color=self.button_color)
-        self.api_token_edit_button.grid(row=3, column=3, padx=10, pady=10)
 
         # Caminho de salvamento
         self.save_path_label = ctk.CTkLabel(self, text="Save Path:")
@@ -392,6 +377,9 @@ PG_PORT=54321
         self.save_path_button = ctk.CTkButton(self, text="Browse", command=self.browse_save_path, fg_color=self.button_color)
         self.save_path_button.grid(row=4, column=2, padx=10, pady=10)
 
+        self.save_path_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('Save Path', self.save_path_edit_button), fg_color=self.button_color)
+        self.save_path_edit_button.grid(row=4, column=3, padx=10, pady=10)
+
         # Número máximo de trabalhadores
         self.max_workers_label = ctk.CTkLabel(self, text="Number of Max Workers:")
         self.max_workers_label.grid(row=5, column=0, padx=10, pady=10, sticky="w")
@@ -402,6 +390,37 @@ PG_PORT=54321
 
         self.max_workers_add_button = ctk.CTkButton(self, text="Add", command=self.add_max_workers, fg_color=self.button_color)
         self.max_workers_add_button.grid(row=5, column=2, padx=10, pady=10)
+
+        self.max_workers_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('Max Workers', self.max_workers_edit_button), fg_color=self.button_color)
+        self.max_workers_edit_button.grid(row=5, column=3, padx=10, pady=10)
+
+    # Função para abrir o menu suspenso de edição
+    def open_edit_menu(self, item_type, button):
+        # Cria uma nova janela para o menu suspenso
+        menu_window = ctk.CTkToplevel(self)
+        menu_window.geometry(f"+{button.winfo_rootx()}+{button.winfo_rooty() + button.winfo_height()}")
+        menu_window.overrideredirect(True)  # Remove a borda da janela para parecer um menu suspenso
+        menu_window.configure(bg='#2e2e2e')
+
+        # Função para fechar o menu quando clicado fora dele
+        def close_menu(event):
+            if event.widget not in menu_window.winfo_children():
+                menu_window.destroy()
+
+        # Vincula o evento de clique fora do menu para fechar
+        self.bind("<Button-1>", close_menu)
+
+        # Adiciona opções ao menu suspenso
+        if item_type == 'GitHub Token and User':
+            ctk.CTkButton(menu_window, text="Edit GitHub Tokens", command=self.edit_github_token_window, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(menu_window, text="Edit GitHub Users", command=self.edit_github_user_window, fg_color=self.button_color).pack(fill='x')
+        elif item_type == 'API Email and Token':
+            ctk.CTkButton(menu_window, text="Edit API Emails", command=self.edit_api_email_window, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(menu_window, text="Edit API Tokens", command=self.edit_api_token_window, fg_color=self.button_color).pack(fill='x')
+        elif item_type == 'Save Path':
+            ctk.CTkButton(menu_window, text="Edit Save Path", command=self.browse_save_path, fg_color=self.button_color).pack(fill='x')
+        elif item_type == 'Max Workers':
+            ctk.CTkButton(menu_window, text="Edit Max Workers", command=self.add_max_workers, fg_color=self.button_color).pack(fill='x')
 
     # Função para atualizar o arquivo .env
     def update_env_file(self, key, value):
@@ -418,73 +437,41 @@ PG_PORT=54321
         elif key == 'SAVE_PATH':
             self.save_path = value
 
-    # Função para adicionar um token do GitHub
-    def add_github_token(self):
+    # Nova função para adicionar token e usuário do GitHub ao mesmo tempo
+    def add_github_token_and_user(self):
         token = self.github_token_entry.get().strip()
-        if token:
+        user = self.github_user_entry.get().strip()
+        if token and user:
             if not self.tokens or (len(self.tokens) == 1 and self.tokens[0] == ''):
                 self.tokens = [token]
-            else:
-                self.tokens.append(token)
-            self.update_env_file('TOKENS', ','.join(self.tokens))
-            self.github_token_entry.delete(0, "end")
-        else:
-            messagebox.showwarning("Warning", "Please enter a GitHub token.")
-
-    # Função para abrir a janela de edição de tokens do GitHub
-    def edit_github_token_window(self):
-        self.open_listbox_window("Edit GitHub Tokens", self.tokens, self.add_github_token_to_listbox)
-
-    # Função para adicionar um usuário do GitHub
-    def add_github_user(self):
-        user = self.github_user_entry.get().strip()
-        if user:
-            if not self.usernames or (len(self.usernames) == 1 and self.usernames[0] == ''):
                 self.usernames = [user]
             else:
+                self.tokens.append(token)
                 self.usernames.append(user)
+            self.update_env_file('TOKENS', ','.join(self.tokens))
             self.update_env_file('USERNAMES', ','.join(self.usernames))
+            self.github_token_entry.delete(0, "end")
             self.github_user_entry.delete(0, "end")
         else:
-            messagebox.showwarning("Warning", "Please enter a GitHub user.")
+            messagebox.showwarning("Warning", "Please enter both a GitHub token and user.")
 
-    # Função para abrir a janela de edição de usuários do GitHub
-    def edit_github_user_window(self):
-        self.open_listbox_window("Edit GitHub Users", self.usernames, self.add_github_user_to_listbox)
-
-    # Função para adicionar um email da API
-    def add_api_email(self):
+    # Nova função para adicionar email e token da API ao mesmo tempo
+    def add_api_email_and_token(self):
         email = self.api_email_entry.get().strip()
-        if email:
+        token = self.api_token_entry.get().strip()
+        if email and token:
             if not self.emails or (len(self.emails) == 1 and self.emails[0] == ''):
                 self.emails = [email]
-            else:
-                self.emails.append(email)
-            self.update_env_file('EMAIL', ','.join(self.emails))
-            self.api_email_entry.delete(0, "end")
-        else:
-            messagebox.showwarning("Warning", "Please enter an API email.")
-
-    # Função para abrir a janela de edição de emails da API
-    def edit_api_email_window(self):
-        self.open_listbox_window("Edit API Emails", self.emails, self.add_api_email_to_listbox)
-
-    # Função para adicionar um token da API
-    def add_api_token(self):
-        token = self.api_token_entry.get().strip()
-        if token:
-            if not self.api_tokens or (len(self.api_tokens) == 1 and self.api_tokens[0] == ''):
                 self.api_tokens = [token]
             else:
+                self.emails.append(email)
                 self.api_tokens.append(token)
+            self.update_env_file('EMAIL', ','.join(self.emails))
             self.update_env_file('API_TOKEN', ','.join(self.api_tokens))
+            self.api_email_entry.delete(0, "end")
             self.api_token_entry.delete(0, "end")
         else:
-            messagebox.showwarning("Warning", "Please enter an API token.")
-
-    # Função para abrir a janela de edição de tokens da API
-    def edit_api_token_window(self):
-        self.open_listbox_window("Edit API Tokens", self.api_tokens, self.add_api_token_to_listbox)
+            messagebox.showwarning("Warning", "Please enter both an API email and token.")
 
     # Função para navegar pelo caminho de salvamento
     def browse_save_path(self):
@@ -498,7 +485,7 @@ PG_PORT=54321
     def add_max_workers(self):
         max_workers_str = self.max_workers_entry.get()
         try:
-            max_workers = int(max_workers_str)  # Tenta converter a entrada para int
+            max_workers = int(max_workers_str)
             self.update_env_file('MAX_WORKERS', str(max_workers))
             self.max_workers_entry.delete(0, "end")
         except ValueError:
@@ -563,24 +550,6 @@ PG_PORT=54321
             self.api_tokens.remove(item)
             self.update_env_file('API_TOKEN', ','.join(self.api_tokens))
 
-    # Função para adicionar um token do GitHub à listbox
-    def add_github_token_to_listbox(self, listbox):
-        token = self.github_token_entry.get()
-        if token:
-            listbox.insert('end', token)
-            self.github_token_entry.delete(0, "end")
-        else:
-            messagebox.showwarning("Warning", "Please enter a GitHub token.")
-
-    # Função para adicionar um usuário do GitHub à listbox
-    def add_github_user_to_listbox(self, listbox):
-        user = self.github_user_entry.get()
-        if user:
-            listbox.insert('end', user)
-            self.github_user_entry.delete(0, "end")
-        else:
-            messagebox.showwarning("Warning", "Please enter a GitHub user.")
-
     # Função para adicionar um email da API à listbox
     def add_api_email_to_listbox(self, listbox):
         email = self.api_email_entry.get()
@@ -598,6 +567,40 @@ PG_PORT=54321
             self.api_token_entry.delete(0, "end")
         else:
             messagebox.showwarning("Warning", "Please enter an API token.")
+
+    # Função para abrir a janela de edição de tokens do GitHub
+    def edit_github_token_window(self):
+        self.open_listbox_window("Edit GitHub Tokens", self.tokens, self.add_github_token_to_listbox)
+
+    # Função para abrir a janela de edição de usuários do GitHub
+    def edit_github_user_window(self):
+        self.open_listbox_window("Edit GitHub Users", self.usernames, self.add_github_user_to_listbox)
+
+    # Função para abrir a janela de edição de emails da API
+    def edit_api_email_window(self):
+        self.open_listbox_window("Edit API Emails", self.emails, self.add_api_email_to_listbox)
+
+    # Função para abrir a janela de edição de tokens da API
+    def edit_api_token_window(self):
+        self.open_listbox_window("Edit API Tokens", self.api_tokens, self.add_api_token_to_listbox)
+
+    # Função para adicionar um token do GitHub à listbox
+    def add_github_token_to_listbox(self, listbox):
+        token = self.github_token_entry.get()
+        if token:
+            listbox.insert('end', token)
+            self.github_token_entry.delete(0, "end")
+        else:
+            messagebox.showwarning("Warning", "Please enter a GitHub token.")
+
+    # Função para adicionar um usuário do GitHub à listbox
+    def add_github_user_to_listbox(self, listbox):
+        user = self.github_user_entry.get()
+        if user:
+            listbox.insert('end', user)
+            self.github_user_entry.delete(0, "end")
+        else:
+            messagebox.showwarning("Warning", "Please enter a GitHub user.")
 
 # Classe principal da aplicação de mineração de dados
 class DataMinerApp():
