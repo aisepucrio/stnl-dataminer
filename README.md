@@ -50,3 +50,21 @@ Siga os passos abaixo para configurar o ambiente e executar a ferramenta:
 # Clone o repositório
 git clone https://github.com/aisepucrio/stnl-jiradatamining.git
 cd stnl-jiradatamining
+
+# Instale os pré-requisitos
+pip install -r requirements.txt
+
+# Entre na pasta source do projeto
+cd ./src
+
+# Inicie o framework
+python main.py
+```
+
+### Configuração
+
+1. Após iniciar, o menu de seleção de plataformas do framework será exibido.
+2. Antes de selecionar qualquer plataforma, você precisa configurar suas credenciais.
+3. Para fazer isso, selecione o ícone de configurações no canto inferior esquerdo da interface.
+4. Ao clicar, abrirá uma janela para você inserir seus dados (Tokens, usuários e emails).
+5. Após inserir e clicar em "Add", você pode fechar a janela e selecionar a plataforma que deseja utilizar no framework.
