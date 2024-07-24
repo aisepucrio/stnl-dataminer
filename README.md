@@ -30,17 +30,7 @@ Obtenha informações detalhadas sobre os diferentes tipos de issues do Jira, in
 
 ### Pré-requisitos
 
-Antes de iniciar, certifique-se de que você tem Python 3.8 ou superior instalado em seu sistema. Você também precisará das seguintes bibliotecas Python:
-
-- `requests`: Para realizar chamadas à API do GitHub e Jira.
-- `json`: Para manipulação de dados em formato JSON.
-- `os`: Para interagir com o sistema operacional.
-- `dotenv`: Para carregar variáveis de ambiente do arquivo `.env`.
-- `tqdm`: Para mostrar barras de progresso em loops.
-- `urlparse`: Para analisar URLs.
-- `customtkinter`: Para criar interfaces gráficas de usuário.
-- `tkcalendar`: Para criar os campos de seleção de data.
-- `tkinter`: Para criar pop-ups.
+Antes de iniciar, certifique-se de que você tem Python 3.11 ou superior instalado em seu sistema.
 
 ### Instalação
 
@@ -48,5 +38,23 @@ Siga os passos abaixo para configurar o ambiente e executar a ferramenta:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/aisepucrio/stnl-jiradatamining.git
-cd stnl-jiradatamining
+git clone https://github.com/aisepucrio/stnl-dataminer.git
+cd stnl-dataminer
+
+# Instale os pré-requisitos
+pip install -r requirements.txt
+
+# Entre na pasta source do projeto
+cd ./src
+
+# Inicie o framework
+python main.py
+```
+
+### Configuração
+
+1. Após iniciar, o menu de seleção de plataformas do framework será exibido.
+2. Antes de selecionar qualquer plataforma, você precisa configurar suas credenciais.
+3. Para fazer isso, selecione o ícone de configurações no canto inferior direito da interface.
+4. Ao clicar, abrirá uma janela para você inserir seus dados (Tokens, usuários e emails).
+5. Após inserir e clicar em "Add", você pode fechar a janela e selecionar a plataforma que deseja utilizar no framework.
