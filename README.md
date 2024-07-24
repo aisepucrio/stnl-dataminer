@@ -55,6 +55,6 @@ python main.py
 
 1. Após iniciar, o menu de seleção de plataformas do framework será exibido.
 2. Antes de selecionar qualquer plataforma, você precisa configurar suas credenciais.
-3. Para fazer isso, selecione o ícone de configurações no canto inferior esquerdo da interface.
+3. Para fazer isso, selecione o ícone de configurações no canto inferior direito da interface.
 4. Ao clicar, abrirá uma janela para você inserir seus dados (Tokens, usuários e emails).
 5. Após inserir e clicar em "Add", você pode fechar a janela e selecionar a plataforma que deseja utilizar no framework.
