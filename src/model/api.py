@@ -166,6 +166,15 @@ class GitHubAPI(BaseAPI):
     # Carrega tokens do GitHub
     def load_tokens(self):
         try:
+            env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
+            print(env_path)
+
+            with open(env_path) as f:
+                for line in f:
+                    if line.strip() and not line.startswith('#'):
+                        key, value = line.split('=', 1)
+                        os.environ[key.strip()] = value.strip().strip('"\'')
+
             self.tokens = os.getenv('TOKENS').split(',')
             self.validate_tokens(self.tokens)
         except Exception as e:

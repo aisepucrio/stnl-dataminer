@@ -274,6 +274,7 @@ class SettingsApp(ctk.CTk):
 
         # Carrega variáveis de ambiente
         self.env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
+
         self.load_env()
 
         self.create_widgets()
@@ -299,6 +300,7 @@ PG_PORT=54321
         load_dotenv(self.env_file)
 
         env_values = dotenv_values(self.env_file)
+
         self.tokens = env_values.get('TOKENS', '').split(',')
         self.usernames = env_values.get('USERNAMES', '').split(',')
         self.emails = env_values.get('EMAIL', '').split(',')
