@@ -59,10 +59,10 @@ python main.py
 3. Para fazer isso, selecione o ícone de configurações no canto inferior direito da interface.
 4. Ao clicar, abrirá uma janela para você inserir seus dados de acordo com a imagem:
 
-- **GitHub Tokens:** Suas credenciais do GitHub.
+- **GitHub Tokens:** Seus tokens do GitHub.
 - **GitHub Users:** Seus usuários do GitHub.
 - **API Email:** Suas credenciais do Jira.
-- **API Token:** Seu token da API do Jira.
+- **API Token:** Seus token da API do Jira.
 - **Save Path:** O local onde o arquivo de mineração será salvo.
 - **Number of Max Workers:** O número de threads que seu computador irá usar.
 
