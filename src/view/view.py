@@ -271,11 +271,18 @@ class SettingsApp(ctk.CTk):
 
         self.button_color = "#1e1e1e"
 
+        # Adicionar o atributo para rastrear o estado do menu
+        self.menu_window = None  # Adicionado para rastrear o estado do menu
+
         # Carrega variáveis de ambiente
         self.env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
         self.load_env()
 
         self.create_widgets()
+
+        self.bind('<Unmap>', self.check_window_state)
+        self.bind('<Map>', self.check_window_state)
+        self.bind("<Configure>", self.on_window_move)
 
     # Função para carregar as variáveis de ambiente
     def load_env(self):
@@ -394,33 +401,65 @@ PG_PORT=54321
         self.max_workers_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('Max Workers', self.max_workers_edit_button), fg_color=self.button_color)
         self.max_workers_edit_button.grid(row=5, column=3, padx=10, pady=10)
 
-    # Função para abrir o menu suspenso de edição
     def open_edit_menu(self, item_type, button):
-        # Cria uma nova janela para o menu suspenso
-        menu_window = ctk.CTkToplevel(self)
-        menu_window.geometry(f"+{button.winfo_rootx()}+{button.winfo_rooty() + button.winfo_height()}")
-        menu_window.overrideredirect(True)  # Remove a borda da janela para parecer um menu suspenso
-        menu_window.configure(bg='#2e2e2e')
+        if self.menu_window and self.menu_window.winfo_exists():
+            self.menu_window.destroy()
+            self.menu_window = None
+            return
 
-        # Função para fechar o menu quando clicado fora dele
+        self.menu_window = ctk.CTkToplevel(self)
+        self.menu_window.overrideredirect(True)
+        self.menu_window.associated_button = button
+        self.update_menu_position()
+        self.menu_window.configure(bg='#2e2e2e')
+
+        self.menu_window.bind("<Destroy>", lambda e: setattr(self, 'menu_window', None))
+
         def close_menu(event):
-            if event.widget not in menu_window.winfo_children():
-                menu_window.destroy()
+            if self.menu_window and self.menu_window.winfo_exists():
+                if not (self.menu_window.winfo_containing(event.x_root, event.y_root) or button.winfo_containing(event.x_root, event.y_root)):
+                    self.menu_window.destroy()
 
-        # Vincula o evento de clique fora do menu para fechar
-        self.bind("<Button-1>", close_menu)
+        self.bind_all("<Button-1>", close_menu)
 
-        # Adiciona opções ao menu suspenso
         if item_type == 'GitHub Token and User':
-            ctk.CTkButton(menu_window, text="Edit GitHub Tokens", command=self.edit_github_token_window, fg_color=self.button_color).pack(fill='x')
-            ctk.CTkButton(menu_window, text="Edit GitHub Users", command=self.edit_github_user_window, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(self.menu_window, text="Edit GitHub Tokens", command=self.edit_github_token_window, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(self.menu_window, text="Edit GitHub Users", command=self.edit_github_user_window, fg_color=self.button_color).pack(fill='x')
         elif item_type == 'API Email and Token':
-            ctk.CTkButton(menu_window, text="Edit API Emails", command=self.edit_api_email_window, fg_color=self.button_color).pack(fill='x')
-            ctk.CTkButton(menu_window, text="Edit API Tokens", command=self.edit_api_token_window, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(self.menu_window, text="Edit API Emails", command=self.edit_api_email_window, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(self.menu_window, text="Edit API Tokens", command=self.edit_api_token_window, fg_color=self.button_color).pack(fill='x')
         elif item_type == 'Save Path':
-            ctk.CTkButton(menu_window, text="Edit Save Path", command=self.browse_save_path, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(self.menu_window, text="Edit Save Path", command=self.browse_save_path, fg_color=self.button_color).pack(fill='x')
         elif item_type == 'Max Workers':
-            ctk.CTkButton(menu_window, text="Edit Max Workers", command=self.add_max_workers, fg_color=self.button_color).pack(fill='x')
+            ctk.CTkButton(self.menu_window, text="Edit Max Workers", command=self.add_max_workers, fg_color=self.button_color).pack(fill='x')
+
+        self.menu_window.bind("<Destroy>", lambda e: self.unbind_all("<Button-1>"))
+
+    # Function to update menu position
+    def update_menu_position(self):
+        if self.menu_window and self.menu_window.winfo_exists():
+            button = self.menu_window.associated_button
+            x = button.winfo_rootx()
+            y = button.winfo_rooty() + button.winfo_height()
+            self.menu_window.geometry(f"+{x}+{y}")
+
+    # Function to close the menu when clicking outside
+    def close_menu(self, event):
+        if self.menu_window and self.menu_window.winfo_exists():
+            if not (self.menu_window.winfo_containing(event.x_root, event.y_root) or self.winfo_containing(event.x_root, event.y_root)):
+                self.menu_window.destroy()
+
+    def check_window_state(self, event):
+        if self.state() == 'withdrawn' or self.state() == 'iconic':
+            if self.menu_window and self.menu_window.winfo_exists():
+                self.menu_window.withdraw()
+        elif self.state() == 'normal':
+            if self.menu_window and self.menu_window.winfo_exists():
+                self.menu_window.deiconify()
+                
+    # Método para rastrear a posição do menu suspenso
+    def on_window_move(self, event):
+        self.update_menu_position()
 
     # Função para atualizar o arquivo .env
     def update_env_file(self, key, value):
