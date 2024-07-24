@@ -279,10 +279,19 @@ class SettingsApp(ctk.CTk):
         self.load_env()
 
         self.create_widgets()
+        self.center_window()
 
         self.bind('<Unmap>', self.check_window_state)
         self.bind('<Map>', self.check_window_state)
         self.bind("<Configure>", self.on_window_move)
+
+    def center_window(self):
+        self.update_idletasks()
+        width = self.winfo_width()
+        height = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
 
     # Função para carregar as variáveis de ambiente
     def load_env(self):
