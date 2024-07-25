@@ -289,7 +289,7 @@ class SettingsApp(ctk.CTk):
     def center_window(self):
         self.update_idletasks()
         width = 700  # Largura desejada
-        height = 300  # Altura desejada
+        height = 345  # Altura desejada
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
@@ -410,6 +410,13 @@ PG_PORT=54321
 
         self.max_workers_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('Max Workers', self.max_workers_edit_button), fg_color=self.button_color)
         self.max_workers_edit_button.grid(row=5, column=3, padx=10, pady=10)
+
+        # Botão "Save Changes"
+        self.save_changes_button = ctk.CTkButton(self, text="Save Changes", command=self.save_changes_and_close, fg_color=self.button_color)
+        self.save_changes_button.grid(row=6, column=0, columnspan=4, pady=20)
+
+    def save_changes_and_close(self):
+        self.destroy()
 
     def open_edit_menu(self, item_type, button):
         if self.menu_window and self.menu_window.winfo_exists():
