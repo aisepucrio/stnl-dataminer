@@ -61,7 +61,7 @@ class SettingsApp(ctk.CTk):
     def center_window(self):
         self.update_idletasks()
         width = 700  # Largura desejada
-        height = 345  # Altura desejada
+        height = 355  # Altura desejada
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
@@ -184,7 +184,7 @@ PG_PORT=54321
         self.max_workers_edit_button.grid(row=5, column=3, padx=10, pady=10)
 
         # Botão "Save Changes"
-        self.save_changes_button = ctk.CTkButton(self, text="Save Changes", command=self.save_changes_and_close, fg_color=self.button_color)
+        self.save_changes_button = ctk.CTkButton(self, text="Save Changes", command=self.save_changes_and_close, fg_color='#3e3e3e')
         self.save_changes_button.grid(row=6, column=0, columnspan=4, pady=20)
 
     def save_changes_and_close(self):
