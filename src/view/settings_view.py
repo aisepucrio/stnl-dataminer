@@ -48,6 +48,16 @@ class SettingsApp(ctk.CTk):
         self.bind('<Map>', self.check_window_state)
         self.bind("<Configure>", self.on_window_move)
 
+        self.keep_windows_on_top()  # Mantém a janela sempre no topo
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def on_closing(self):
+        print("Save changes before closing the window.")
+
+    def keep_windows_on_top(self):
+        self.attributes('-topmost', True)
+
     def center_window(self):
         self.update_idletasks()
         width = 700  # Largura desejada
