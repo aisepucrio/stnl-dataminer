@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from model.base_api import BaseAPI
 
+#TODO Pelo amor de deus coloque um função para validar o token do Jira
+
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
 

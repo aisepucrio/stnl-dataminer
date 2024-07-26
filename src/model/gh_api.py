@@ -289,11 +289,33 @@ class GitHubAPI(BaseAPI):
         try:
             repo = Repo(repo_path)
             origin = repo.remotes.origin
+            
+            # Tenta fazer pull
             origin.pull()
             print(f'\nRepo updated: {repo_path}\n')
         except GitCommandError as e:
-            print(f'Error updating repo: {e}')
+            if 'CONFLICT' in str(e):
+                print(f'Conflict detected: {e}')
+                # Resolve conflitos de forma automática usando estratégia de mesclagem
+                self.resolve_conflicts(repo)
+            else:
+                print(f'Error updating repo: {e}')
         popup.destroy()
+
+    # Resolve conflitos de forma automática
+    def resolve_conflicts(self, repo):
+        try:
+            repo.git.merge('--abort')  # Aborta mesclagem anterior, se existir
+        except GitCommandError:
+            pass  # Ignora erros de abortar mesclagem
+
+        try:
+            repo.git.reset('--hard', 'origin/main')  # Reseta para o estado remoto
+            repo.git.clean('-fd')  # Remove arquivos não rastreados
+            repo.remotes.origin.pull()  # Tenta novamente o pull
+            print('Conflicts resolved automatically by resetting to the remote state.')
+        except GitCommandError as e:
+            print(f'Error resolving conflicts: {e}')
 
     # Converte data para formato ISO 8601
     def convert_to_iso8601(self, date):
