@@ -17,6 +17,8 @@ class JiraController(BaseController):
 
     # Método para minerar dados do Jira
     def mine_data(self, url, start_date, end_date, task_types, update_progress_callback=None, progress_step=None):
+        self.stop_process_flag = False
+
         jira_domain, project_key = self.api.extract_jira_domain_and_key(url)
         start_date = self.view.start_date_entry.get_date()
         end_date = self.view.end_date_entry.get_date()
@@ -25,7 +27,7 @@ class JiraController(BaseController):
 
         if not task_types:
             messagebox.showerror("Error", "Please select at least one issue type.")
-            return
+            return None
 
         custom_field_mapping = self.api.search_custom_fields(jira_domain)
 
@@ -34,7 +36,7 @@ class JiraController(BaseController):
             if self.stop_process_flag:
                 print("Data collection stopped by user.")
                 messagebox.showinfo("Stopped", "Data collection was stopped by the user.")
-                return
+                return None
 
             tasks = self.api.collect_tasks(jira_domain, project_key, task_type, start_date_str, end_date_str, lambda: self.stop_process_flag)
             tasks = self.api.remove_null_fields(tasks)

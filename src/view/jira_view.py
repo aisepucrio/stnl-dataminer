@@ -54,6 +54,10 @@ class JiraApp(BaseView):
                 progress_step = 1 / total_tasks if total_tasks > 0 else 1
 
                 data = self.controller.mine_data(url, start_date, end_date, task_types, self.update_progress, progress_step)
+                if data is None:
+                    self.result_label.configure(text="Process stopped by the user.")
+                    return
+
                 message = ""
                 for task_type, tasks in data.items():
                     message += f"{task_type}: {len(tasks)}\n"
