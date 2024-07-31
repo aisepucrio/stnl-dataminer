@@ -152,7 +152,8 @@ class DataMinerApp():
 
     # Função para lidar com o clique no botão de configurações
     def on_settings_click(self):
-        settings_app = SettingsApp()
+        self.root.withdraw()
+        settings_app = SettingsApp(self.root)
         settings_app.mainloop()
 
     # Função para aumentar o zoom de uma imagem ao passar o mouse

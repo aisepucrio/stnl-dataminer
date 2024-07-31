@@ -24,8 +24,9 @@ class CTkListbox(ctk.CTkFrame):
 
 # Classe para a aplicação de configurações
 class SettingsApp(ctk.CTk):
-    def __init__(self):
+    def __init__(self, menu_app):
         super().__init__()
+        self.menu_app = menu_app
         self.title("Settings")
         self.geometry("800x600")  # Definindo dimensões específicas da janela
         ctk.set_appearance_mode('dark')
@@ -48,15 +49,10 @@ class SettingsApp(ctk.CTk):
         self.bind('<Map>', self.check_window_state)
         self.bind("<Configure>", self.on_window_move)
 
-        self.keep_windows_on_top()  # Mantém a janela sempre no topo
-
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def on_closing(self):
         print("Save changes before closing the window.")
-
-    def keep_windows_on_top(self):
-        self.attributes('-topmost', True)
 
     def center_window(self):
         self.update_idletasks()
@@ -187,7 +183,9 @@ PG_PORT=54321
         self.save_changes_button = ctk.CTkButton(self, text="Save Changes", command=self.save_changes_and_close, fg_color='#3e3e3e')
         self.save_changes_button.grid(row=6, column=0, columnspan=4, pady=20)
 
+    # Função para salvar as alterações e fechar a janela
     def save_changes_and_close(self):
+        self.menu_app.deiconify()
         self.destroy()
 
     def open_edit_menu(self, item_type, button):
