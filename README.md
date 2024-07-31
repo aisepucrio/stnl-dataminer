@@ -45,9 +45,6 @@ cd stnl-dataminer
 # Instale os pré-requisitos
 pip install -r requirements.txt
 
-# Entre na pasta source do projeto
-cd ./src
-
 # Inicie o framework
 python main.py
 ```
