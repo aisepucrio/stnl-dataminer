@@ -5,9 +5,6 @@ from model.jira_api import JiraAPI
 from dotenv import load_dotenv
 from tkinter import messagebox
 
-# Carrega variáveis de ambiente do arquivo .env
-load_dotenv()
-
 # Controlador para interação com Jira
 class JiraController(BaseController):
     def __init__(self, view):
@@ -17,6 +14,8 @@ class JiraController(BaseController):
 
     # Método para minerar dados do Jira
     def mine_data(self, url, start_date, end_date, task_types, update_progress_callback=None, progress_step=None):
+        # Recarrega as variáveis de ambiente antes de iniciar a mineração
+        self.reload_env()
         self.stop_process_flag = False
 
         jira_domain, project_key = self.api.extract_jira_domain_and_key(url)

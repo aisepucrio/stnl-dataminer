@@ -6,13 +6,17 @@ from model.base_api import BaseAPI
 
 #TODO Pelo amor de deus coloque um função para validar o token do Jira
 
-# Carrega variáveis de ambiente do arquivo .env
-load_dotenv()
-
 # Classe para interações com a API do Jira
 class JiraAPI(BaseAPI):
     def __init__(self):
         super().__init__()
+        self.reload_env()
+        self.email = os.getenv('EMAIL')
+        self.api_token = os.getenv('API_TOKEN')
+
+    # Método para recarregar variáveis de ambiente
+    def reload_env(self):
+        super().reload_env()
         self.email = os.getenv('EMAIL')
         self.api_token = os.getenv('API_TOKEN')
 
@@ -26,6 +30,7 @@ class JiraAPI(BaseAPI):
 
     # Busca campos customizados do Jira
     def search_custom_fields(self, jira_domain):
+        self.reload_env()
         url = f"https://{jira_domain}/rest/api/2/field"
         auth = (self.email, self.api_token)
         response = requests.get(url, auth=auth)
@@ -35,6 +40,7 @@ class JiraAPI(BaseAPI):
 
     # Coleta tarefas do Jira
     def collect_tasks(self, jira_domain, project_key, task_type, start_date, end_date, stop_collecting):
+        self.reload_env()
         all_issues = []
         start_at = 0
         max_results = 50

@@ -2,17 +2,18 @@ import os
 import json
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente do arquivo .env
-load_dotenv()
-
 # Classe base para interações com APIs
 class BaseAPI:
     def __init__(self):
-        load_dotenv()
+        self.reload_env()
+
+    # Método para recarregar variáveis de ambiente
+    def reload_env(self):
+        load_dotenv(override=True)
 
     # Método para obter o caminho de salvamento
     def get_save_path(self):
-        load_dotenv()
+        self.reload_env()
         return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
 
     # Método para salvar dados em formato JSON

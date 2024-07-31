@@ -16,7 +16,7 @@ class BaseController:
     # Método para obter o caminho de salvamento dos dados
     def get_save_path(self):
         # Recarregar as variáveis de ambiente
-        load_dotenv()
+        self.reload_env()
         # Retorna o caminho de salvamento, padrão é a pasta Downloads do usuário
         return os.getenv('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
 
@@ -28,3 +28,7 @@ class BaseController:
     # Método para parar o processo de coleta de dados
     def stop_process(self):
         self.stop_process_flag = True
+
+    # Método para recarregar as variáveis de ambiente
+    def reload_env(self):
+        load_dotenv(override=True)
