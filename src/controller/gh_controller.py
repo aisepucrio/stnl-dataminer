@@ -22,7 +22,12 @@ class GitHubController(BaseController):
         if max_workers is None:
             max_workers = self.max_workers_default
         repo_name = self.api.get_repo_name(repo_url)
-        self.db.create_schema_and_tables(repo_name)
+
+        if self.db.conn and self.db.cursor:
+            self.db.create_schema_and_tables(repo_name)
+        else:
+            print("Skipping database operations due to connection issues.")
+            messagebox.showwarning("Warning", "Database connection could not be established. Skipping database operations.")
         
         # Formata as datas de início e fim no formato ISO
         start_date_iso = start_date.strftime('%Y-%m-%d') + 'T00:00:01Z'
@@ -36,7 +41,8 @@ class GitHubController(BaseController):
                 print("Data collection stopped by user.")
                 return
             data['commits'] = self.api.get_commits_pydriller(repo_name, start_date_iso, end_date_iso, max_workers)
-            self.db.insert_commits(repo_name, data['commits'])
+            if self.db.conn and self.db.cursor:
+                self.db.insert_commits(repo_name, data['commits'])
             if update_progress_callback:
                 self.view.after(0, update_progress_callback, progress_step)
 
@@ -46,7 +52,8 @@ class GitHubController(BaseController):
                 print("Data collection stopped by user.")
                 return
             data['issues'] = self.api.get_issues(repo_name, start_date_iso, end_date_iso, max_workers)
-            self.db.insert_issues(repo_name, data['issues'])
+            if self.db.conn and self.db.cursor:
+                self.db.insert_issues(repo_name, data['issues'])
             if update_progress_callback:
                 self.view.after(0, update_progress_callback, progress_step)
 
@@ -56,7 +63,8 @@ class GitHubController(BaseController):
                 print("Data collection stopped by user.")
                 return
             data['pull_requests'] = self.api.get_pull_requests(repo_name, start_date_iso, end_date_iso, max_workers)
-            self.db.insert_pull_requests(repo_name, data['pull_requests'])
+            if self.db.conn and self.db.cursor:
+                self.db.insert_pull_requests(repo_name, data['pull_requests'])
             if update_progress_callback:
                 self.view.after(0, update_progress_callback, progress_step)
 
@@ -66,7 +74,8 @@ class GitHubController(BaseController):
                 print("Data collection stopped by user.")
                 return
             data['branches'] = self.api.get_branches(repo_name, max_workers)
-            self.db.insert_branches(repo_name, data['branches'])
+            if self.db.conn and self.db.cursor:
+                self.db.insert_branches(repo_name, data['branches'])
             if update_progress_callback:
                 self.view.after(0, update_progress_callback, progress_step)
 
