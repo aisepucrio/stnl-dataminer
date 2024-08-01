@@ -1,7 +1,9 @@
 import os
 import subprocess
 import sys
-
+import keyboard
+from tkinter import messagebox
+        
 def run_main_py():
     # Diretório atual
     current_dir = os.getcwd()

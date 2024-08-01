@@ -1,6 +1,6 @@
 import tkinter as tk
 import platform
-from tkinter import PhotoImage
+from tkinter import PhotoImage, messagebox
 from PIL import Image, ImageTk, ImageDraw
 from tkinter import font as tkfont
 from view.jira_view import JiraApp
@@ -29,6 +29,17 @@ class DataMinerApp():
         self.image_refs = {}
 
         self.create_widgets()
+
+        self.check_for_exit_key()
+
+    # Função para verificar a tecla 'q'
+    def check_for_exit_key(self):
+        self.root.bind_all('<KeyPress-q>', self.on_exit_key)
+        self.root.after(100, self.check_for_exit_key)
+
+    def on_exit_key(self, event):
+        print("Saindo...")
+        self.exit()
 
     # Função para centralizar a janela na tela
     def center_window(self):
