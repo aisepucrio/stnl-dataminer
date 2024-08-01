@@ -20,7 +20,7 @@ class GitHubController(BaseController):
         self.api = GitHubAPI(view)
 
     def verify_database_credentials(self):
-        if self.db.conn is None and self.db.cursor is None:
+        if self.db is not None and (self.db.conn is None and self.db.cursor is None):
             self.db = None
 
     # Método para coletar dados do repositório GitHub

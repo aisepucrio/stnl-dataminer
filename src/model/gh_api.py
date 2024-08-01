@@ -408,6 +408,7 @@ class GitHubAPI(BaseAPI):
             max_workers = self.max_workers_default
         url = f'https://api.github.com/repos/{repo_name}/pulls'
         params = {
+            'state': 'all',
             'since': f'{start_date}T00:00:01Z',
             'until': f'{end_date}T23:59:59Z',
             'per_page': 35
@@ -432,7 +433,7 @@ class GitHubAPI(BaseAPI):
                     'state': pr['state'],
                     'creator': pr['user']['login'],
                     'comments': comments,
-                    'labels': labels  # Adicionando labels ao dicionário
+                    'labels': labels 
                 })
         return essential_pull_requests
 
