@@ -13,7 +13,8 @@ class GitHubController(BaseController):
     def __init__(self, view):
         super().__init__()
         self.view = view
-        self.db = Database()
+        print(int(os.getenv('USE_DATABASE')))
+        self.db = Database() if int(os.getenv('USE_DATABASE')) else None
         self.max_workers_default = int(os.getenv('MAX_WORKERS', '4'))
         self.api = GitHubAPI(view)
 

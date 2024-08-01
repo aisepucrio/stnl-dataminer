@@ -104,6 +104,16 @@ PG_PORT=54321
         self.ensure_env_key('PG_PASSWORD', '#St@n3L@b2@24!')
         self.ensure_env_key('PG_PORT', '54321')
 
+    def database_checkbox_command(self):
+        self.database_checkbox_value = self.database_checkbox.get()
+        
+        set_key(self.env_file, 'USE_DATABASE', str(self.database_checkbox_value))
+
+        if self.database_checkbox_value:
+            print("Database checkbox checked.")
+        else:
+            print("Database checkbox unchecked.")
+
     # Função para garantir que uma chave está presente no arquivo .env
     def ensure_env_key(self, key, default_value=''):
         if key not in dotenv_values(self.env_file):
@@ -178,6 +188,9 @@ PG_PORT=54321
 
         self.max_workers_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('Max Workers', self.max_workers_edit_button), fg_color=self.button_color)
         self.max_workers_edit_button.grid(row=5, column=3, padx=10, pady=10)
+        
+        self.database_checkbox = ctk.CTkCheckBox(self, text="Use Database", command=self.database_checkbox_command)
+        self.database_checkbox.grid(row=6, column=0, padx=10, pady=10, sticky="w")
 
         # Botão "Save Changes"
         self.save_changes_button = ctk.CTkButton(self, text="Save Changes", command=self.save_changes_and_close, fg_color='#3e3e3e')

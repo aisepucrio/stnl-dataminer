@@ -24,7 +24,7 @@ def run_main_py():
         print(f"O arquivo 'main.py' não existe na pasta 'src': {src_dir}")
         return
     
-    # Executa o main.py usando o mesmo intérprete Python
+    # Executa o main.py usando o mesmo interpretador Python
     try:
         subprocess.run([sys.executable, main_py_path], check=True)
         print(f"Executado com sucesso: {main_py_path}")
