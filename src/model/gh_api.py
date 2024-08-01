@@ -360,7 +360,14 @@ class GitHubAPI(BaseAPI):
             'sha': commit.hash,
             'message': commit.msg,
             'date': self.convert_to_iso8601(commit.author_date),
-            'author': commit.author.name
+            'author': commit.author.name,
+            'diffs': [{
+                'old_path': mod.old_path,
+                'new_path': mod.new_path,
+                'diff': mod.diff,
+                'added_lines': mod.added_lines,
+                'deleted_lines': mod.deleted_lines
+            } for mod in commit.modified_files]
         } for commit in commits]
 
         return essential_commits
