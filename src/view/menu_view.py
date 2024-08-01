@@ -1,11 +1,13 @@
 import tkinter as tk
 import platform
+import os
 from tkinter import PhotoImage, messagebox
 from PIL import Image, ImageTk, ImageDraw
 from tkinter import font as tkfont
 from view.jira_view import JiraApp
 from view.gh_view import GitHubApp
 from view.settings_view import SettingsApp
+from dotenv import load_dotenv, dotenv_values, set_key
 
 # Classe principal da aplicação de mineração de dados
 class DataMinerApp():
@@ -13,6 +15,8 @@ class DataMinerApp():
         self.root = root
         self.root.title("Data Miner")
         self.root.configure(bg='#1e1e1e')
+
+        load_dotenv()
 
         if platform.system() == "Linux":
             self.root.iconphoto(True, PhotoImage(file='view/icons/datamining.png'))
@@ -28,9 +32,22 @@ class DataMinerApp():
 
         self.image_refs = {}
 
+        self.env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
+        self.env_values  = dotenv_values(self.env_file)
+        
+        self.set_initial_env_variables()
+
         self.create_widgets()
 
         self.check_for_exit_key()
+
+    # Definindo um valor inicial para 'USE_DATABASE' como 0
+    def set_initial_env_variables(self):
+        if 'USE_DATABASE' not in self.env_values:
+            set_key(self.env_file, 'USE_DATABASE', '0')
+        else:
+            if self.env_values['USE_DATABASE'] == '1':
+                set_key(self.env_file, 'USE_DATABASE', '0')
 
     # Função para verificar a tecla 'q'
     def check_for_exit_key(self):
