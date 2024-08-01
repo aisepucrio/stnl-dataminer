@@ -301,7 +301,8 @@ PG_PORT=54321
 
     # Função para navegar pelo caminho de salvamento
     def browse_save_path(self):
-        path = filedialog.askdirectory()
+        current_directory = os.getcwd() 
+        path = filedialog.askdirectory(initialdir=current_directory)  
         if path:
             self.save_path_entry.delete(0, "end")
             self.save_path_entry.insert(0, path)
