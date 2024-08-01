@@ -10,6 +10,9 @@ class JiraApp(BaseView):
         self.controller = JiraController(self)
         self.center_window()
 
+        # Definir valor padrão para o campo de entrada de URL
+        self.url_entry.insert(0, "https://stone-puc.atlassian.net/jira/software/c/projects/CSTONE/boards/3?isInsightsOpen=true")
+
         # Adiciona opções de mineração específicas do Jira
         self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
         self.epics_switch.pack(pady=5, padx=20, anchor='w')
