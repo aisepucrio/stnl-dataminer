@@ -12,11 +12,13 @@ class Database:
         self.dotenv_path = dotenv_path
         self.load_env_variables()
 
-        self.host = os.getenv('PG_HOST')
-        self.database = os.getenv('PG_DATABASE')
-        self.user = os.getenv('PG_USER')
-        self.password = os.getenv('PG_PASSWORD')
-        self.port = os.getenv('PG_PORT')
+        self.host = self.clean_string(os.getenv('PG_HOST'))
+        self.database = self.clean_string(os.getenv('PG_DATABASE'))
+        self.user = self.clean_string(os.getenv('PG_USER'))
+        self.password = self.clean_string(os.getenv('PG_PASSWORD'))
+        self.port = self.clean_string(os.getenv('PG_PORT'))
+
+        print(f"Host: {self.host}, Database: {self.database}, User: {self.user}, Port: {self.port}, Password: {self.password}")
 
         try:
             # Conecta ao banco de dados PostgreSQL usando variáveis de ambiente
@@ -30,16 +32,27 @@ class Database:
             # Cria um cursor para executar comandos SQL
             self.cursor = self.conn.cursor()
             print(f"Connected to database {self.database} at {self.host}")
-        except OperationalError as e:
+        except Exception as e:
             self.conn = None
             self.cursor = None
             print(f"Could not connect to the database: {e}")
             print(f"Host: {self.host}, Database: {self.database}, User: {self.user}, Port: {self.port}")
             self.handle_connection_error()
 
+    def clean_string(self, input_str):
+        if input_str is not None:
+            try:
+                return input_str.encode('latin1').decode('utf-8')
+            except UnicodeDecodeError:
+                return input_str  # Retorna a string original se a decodificação falhar
+        return input_str
+
     def load_env_variables(self):
         if os.path.exists(self.dotenv_path):
             load_dotenv(self.dotenv_path, override=True)
+
+        for key, value in os.environ.items():
+            os.environ[key] = self.clean_string(value)
 
     def handle_connection_error(self):
         def on_continue():
