@@ -45,7 +45,7 @@ class GitHubAPI(BaseAPI):
 
     # Função para validar token do GitHub
     def validate_tokens(self, tokens):
-        github_token_regex = re.compile(r'ghp_[a-zA-Z0-9]{36}')
+        github_token_regex = re.compile(r'(ghp|gho|ghu|ghr|ghs|ghb|github_pat)_[a-zA-Z0-9]{36}')
         for token in tokens:
             print(f"Validating GitHub token: {token}")
             if not github_token_regex.match(token):
