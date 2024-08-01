@@ -112,11 +112,6 @@ class SettingsApp(ctk.CTk):
         
         set_key(self.env_file, 'USE_DATABASE', '1' if self.database_checkbox_value else '0')
 
-        if self.database_checkbox_value:
-            print("Database checkbox checked.")
-        else:
-            print("Database checkbox unchecked.")
-
     # Função para garantir que uma chave está presente no arquivo .env
     def ensure_env_key(self, key, default_value=''):
         if key not in dotenv_values(self.env_file):

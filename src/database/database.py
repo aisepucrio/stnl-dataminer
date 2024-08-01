@@ -18,8 +18,6 @@ class Database:
         self.password = self.clean_string(os.getenv('PG_PASSWORD'))
         self.port = self.clean_string(os.getenv('PG_PORT'))
 
-        print(f"Host: {self.host}, Database: {self.database}, User: {self.user}, Port: {self.port}, Password: {self.password}")
-
         try:
             # Conecta ao banco de dados PostgreSQL usando variáveis de ambiente
             self.conn = connect(
@@ -31,12 +29,9 @@ class Database:
             )
             # Cria um cursor para executar comandos SQL
             self.cursor = self.conn.cursor()
-            print(f"Connected to database {self.database} at {self.host}")
         except Exception as e:
             self.conn = None
             self.cursor = None
-            print(f"Could not connect to the database: {e}")
-            print(f"Host: {self.host}, Database: {self.database}, User: {self.user}, Port: {self.port}")
             messagebox.showwarning("Warning", "Database connection could not be established. Skipping database operations.")
 
     def clean_string(self, input_str):
