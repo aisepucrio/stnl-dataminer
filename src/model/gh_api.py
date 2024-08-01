@@ -282,6 +282,14 @@ class GitHubAPI(BaseAPI):
         skip_button = ctk.CTkButton(popup, text="Skip", command=popup.destroy)
         skip_button.pack(side="right", padx=20, pady=20)
 
+        # Center the popup window
+        popup.update_idletasks()
+        width = popup.winfo_width()
+        height = popup.winfo_height()
+        x = (popup.winfo_screenwidth() // 2) - (width // 2)
+        y = (popup.winfo_screenheight() // 2) - (height // 2)
+        popup.geometry(f"{width}x{height}+{x}+{y}")
+
         popup.wait_window()
 
     # Atualiza o repositório local

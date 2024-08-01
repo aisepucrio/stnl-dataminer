@@ -1,7 +1,7 @@
 import tkinter as tk
 import platform
 import os
-from tkinter import PhotoImage, messagebox
+from tkinter import PhotoImage 
 from PIL import Image, ImageTk, ImageDraw
 from tkinter import font as tkfont
 from view.jira_view import JiraApp

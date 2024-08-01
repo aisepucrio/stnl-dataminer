@@ -28,7 +28,7 @@ class SettingsApp(ctk.CTk):
         super().__init__()
         self.menu_app = menu_app
         self.title("Settings")
-        self.geometry("800x600")  # Definindo dimensões específicas da janela
+        self.geometry("800x750")  # Definindo dimensões específicas da janela
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
 
@@ -57,7 +57,7 @@ class SettingsApp(ctk.CTk):
     def center_window(self):
         self.update_idletasks()
         width = 700  # Largura desejada
-        height = 355  # Altura desejada
+        height = 400  # Altura desejada
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
@@ -65,17 +65,18 @@ class SettingsApp(ctk.CTk):
     # Função para carregar as variáveis de ambiente
     def load_env(self):
         default_env_content = """TOKENS=
-USERNAMES=
-EMAIL=
-API_TOKEN=
-SAVE_PATH=
-MAX_WORKERS='4'
-PG_HOST=opus.servehttp.com
-PG_DATABASE=aise-stone
-PG_USER=aise-stone
-PG_PASSWORD=#St@n3L@b2@24!
-PG_PORT=54321
-"""
+    USERNAMES=
+    EMAIL=
+    API_TOKEN=
+    SAVE_PATH=
+    MAX_WORKERS='4'
+    PG_HOST=opus.servehttp.com
+    PG_DATABASE=aise-stone
+    PG_USER=aise-stone
+    PG_PASSWORD=#St@n3L@b2@24!
+    PG_PORT=54321
+    USE_DATABASE='0'
+    """
         if not os.path.exists(self.env_file):
             with open(self.env_file, 'w') as f:
                 f.write(default_env_content)
@@ -90,6 +91,7 @@ PG_PORT=54321
         self.save_path = env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
         max_workers_str = env_values.get('MAX_WORKERS', '4')
         self.max_workers = int(max_workers_str) if max_workers_str else 1
+        self.use_database = env_values.get('USE_DATABASE', '0') == '1'
 
         # Garante que todas as chaves necessárias estão presentes no arquivo .env
         self.ensure_env_key('TOKENS')
@@ -103,11 +105,12 @@ PG_PORT=54321
         self.ensure_env_key('PG_USER', 'aise-stone')
         self.ensure_env_key('PG_PASSWORD', '#St@n3L@b2@24!')
         self.ensure_env_key('PG_PORT', '54321')
+        self.ensure_env_key('USE_DATABASE', '0')
 
     def database_checkbox_command(self):
         self.database_checkbox_value = self.database_checkbox.get()
         
-        set_key(self.env_file, 'USE_DATABASE', str(self.database_checkbox_value))
+        set_key(self.env_file, 'USE_DATABASE', '1' if self.database_checkbox_value else '0')
 
         if self.database_checkbox_value:
             print("Database checkbox checked.")
@@ -188,13 +191,16 @@ PG_PORT=54321
 
         self.max_workers_edit_button = ctk.CTkButton(self, text="Edit", command=lambda: self.open_edit_menu('Max Workers', self.max_workers_edit_button), fg_color=self.button_color)
         self.max_workers_edit_button.grid(row=5, column=3, padx=10, pady=10)
-        
+
         self.database_checkbox = ctk.CTkCheckBox(self, text="Use Database", command=self.database_checkbox_command)
         self.database_checkbox.grid(row=6, column=0, padx=10, pady=10, sticky="w")
 
+        # Define o estado inicial da checkbox
+        self.database_checkbox.select() if self.use_database else self.database_checkbox.deselect()
+
         # Botão "Save Changes"
         self.save_changes_button = ctk.CTkButton(self, text="Save Changes", command=self.save_changes_and_close, fg_color='#3e3e3e')
-        self.save_changes_button.grid(row=6, column=0, columnspan=4, pady=20)
+        self.save_changes_button.grid(row=7, column=0, columnspan=4, pady=20)
 
     # Função para salvar as alterações e fechar a janela
     def save_changes_and_close(self):
