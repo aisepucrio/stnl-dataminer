@@ -3,6 +3,8 @@ import os
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from model.base_api import BaseAPI
+from requests.auth import HTTPBasicAuth
+import re
 
 #TODO Pelo amor de deus coloque um função para validar o token do Jira
 
@@ -13,6 +15,14 @@ class JiraAPI(BaseAPI):
         self.reload_env()
         self.email = os.getenv('EMAIL')
         self.api_token = os.getenv('API_TOKEN')
+
+    # Método para validar o token do Jira
+    def validate_jira_token(self, api_token):
+        # Define o padrão regex para o token fornecido
+        padrao = r'^ATATT3xFfGF0[a-zA-Z0-9_\-]+=[0-9A-F]+$'
+        
+        # Verifica se o token corresponde ao padrão
+        return bool(re.match(padrao, api_token))
 
     # Método para recarregar variáveis de ambiente
     def reload_env(self):

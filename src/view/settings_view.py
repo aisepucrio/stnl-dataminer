@@ -2,6 +2,7 @@ import customtkinter as ctk
 import os  
 from dotenv import load_dotenv, set_key, dotenv_values
 from tkinter import font as tkfont, messagebox, Toplevel, Listbox, filedialog
+from model.jira_api import JiraAPI
 
 # Classe personalizada de Listbox
 class CTkListbox(ctk.CTkFrame):
@@ -31,6 +32,9 @@ class SettingsApp(ctk.CTk):
         self.geometry("800x600")  # Definindo dimensões específicas da janela
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme("dark-blue")
+
+        # Inicializa a API do Jira
+        self.jira_api = JiraAPI()
 
         self.button_color = "#1e1e1e"
 
@@ -299,16 +303,19 @@ PG_PORT=54321
         email = self.api_email_entry.get().strip()
         token = self.api_token_entry.get().strip()
         if email and token:
-            if not self.emails or (len(self.emails) == 1 and self.emails[0] == ''):
-                self.emails = [email]
-                self.api_tokens = [token]
+            if self.jira_api.validate_jira_token(token):
+                if not self.emails or (len(self.emails) == 1 and self.emails[0] == ''):
+                    self.emails = [email]
+                    self.api_tokens = [token]
+                else:
+                    self.emails.append(email)
+                    self.api_tokens.append(token)
+                self.update_env_file('EMAIL', ','.join(self.emails))
+                self.update_env_file('API_TOKEN', ','.join(self.api_tokens))
+                self.api_email_entry.delete(0, "end")
+                self.api_token_entry.delete(0, "end")
             else:
-                self.emails.append(email)
-                self.api_tokens.append(token)
-            self.update_env_file('EMAIL', ','.join(self.emails))
-            self.update_env_file('API_TOKEN', ','.join(self.api_tokens))
-            self.api_email_entry.delete(0, "end")
-            self.api_token_entry.delete(0, "end")
+                messagebox.showwarning("Error", "Invalid Jira credentials.")
         else:
             messagebox.showwarning("Warning", "Please enter both an API email and token.")
 
