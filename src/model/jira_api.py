@@ -6,8 +6,6 @@ from model.base_api import BaseAPI
 from requests.auth import HTTPBasicAuth
 import re
 
-#TODO Pelo amor de deus coloque um função para validar o token do Jira
-
 # Classe para interações com a API do Jira
 class JiraAPI(BaseAPI):
     def __init__(self):
@@ -47,6 +45,22 @@ class JiraAPI(BaseAPI):
         response.raise_for_status()
         fields = response.json()
         return {field['id']: field['name'] for field in fields if field['id'].startswith('customfield')}
+    
+    # Busca tipos de tarefas do Jira
+    def get_issuetypes(self, jira_domain, email, api_token):
+        url = f"https://{jira_domain}/rest/api/3/issuetype"
+        
+        headers = {
+            "Accept": "application/json"
+        }
+        
+        try:
+            response = requests.get(url, headers=headers, auth=HTTPBasicAuth(email, api_token))
+            response.raise_for_status()  # Lança uma exceção para códigos de status HTTP de erro
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao conectar: {e}")
+            return None
 
     # Coleta tarefas do Jira
     def collect_tasks(self, jira_domain, project_key, task_type, start_date, end_date, stop_collecting):

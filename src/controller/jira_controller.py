@@ -27,11 +27,26 @@ class JiraController(BaseController):
         if not task_types:
             messagebox.showerror("Error", "Please select at least one issue type.")
             return None
+        
+        # Verifica se os tipos de issue existem no projeto
+        issuetypes = self.api.get_issuetypes(jira_domain, self.api.email, self.api.api_token)
+        if not issuetypes:
+            messagebox.showerror("Error", f"Could not fetch issue types for project '{project_key}'.")
+            return None
+
+        valid_task_types = [issuetype['name'] for issuetype in issuetypes]
+        invalid_task_types = [task_type for task_type in task_types if task_type not in valid_task_types]
+
+        if invalid_task_types:
+            messagebox.showinfo("Info", f"The following issue types are not found in the project '{project_key}': {', '.join(invalid_task_types)}. They will be skipped.")
 
         custom_field_mapping = self.api.search_custom_fields(jira_domain)
 
         all_issues = {}
         for task_type in task_types:
+            if task_type not in valid_task_types:
+                continue  # Pula tipos de issue inválidos
+
             if self.stop_process_flag:
                 print("Data collection stopped by user.")
                 messagebox.showinfo("Stopped", "Data collection was stopped by the user.")
