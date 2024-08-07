@@ -23,9 +23,3 @@ class BaseAPI:
         with open(full_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
     
-    # Método para lidar com limite de requisições
-    def handle_rate_limit(self, response):
-        rate_limit_remaining = int(response.headers.get('X-RateLimit-Remaining', 0))
-        if rate_limit_remaining < 100:
-            self.rotate_token()
-        return rate_limit_remaining

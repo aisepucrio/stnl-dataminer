@@ -43,6 +43,21 @@ class GitHubAPI(BaseAPI):
         self.rotate_token()
         self.max_workers_default = int(os.getenv('MAX_WORKERS', '12'))
 
+    # Método para lidar com limite de requisições
+    def handle_rate_limit(self, response):
+        url = "https://api.github.com/rate_limit"
+        headers = {
+            "Authorization": f"token {self.tokens[0]}"
+        }
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            core_limit = data['rate']['remaining']
+            print(f"\nRemaining requests: {core_limit}\n")
+            return core_limit
+        else:
+            raise Exception(f"Error fetching rate limit: {response.status_code}, {response.text}")
+
     # Função para validar token do GitHub
     def validate_tokens(self, tokens):
         github_token_regex = re.compile(r'(ghp|gho|ghu|ghr|ghs|ghb|github_pat)_[a-zA-Z0-9]{36}')
@@ -80,7 +95,8 @@ class GitHubAPI(BaseAPI):
     def rotate_token(self):
         self.current_token_index = (self.current_token_index + 1) % len(self.tokens)
         self.auth = (self.usernames[self.current_token_index], self.tokens[self.current_token_index])
-        print(f"Rotated to token {self.current_token_index + 1}")
+        print(f"Rotated to token {self.current_token_index + 1}: {self.tokens[self.current_token_index]}")
+
 
     # Obtém nome do repositório a partir da URL
     def get_repo_name(self, repo_url):
@@ -183,6 +199,7 @@ class GitHubAPI(BaseAPI):
                     return data
             except requests.exceptions.RequestException as e:
                 if e.response is not None and e.response.status_code == 403:
+                    print(f"The token requisition was rejected. Rotating token...")
                     self.rotate_token()
                     attempts += 1
                 else:
@@ -403,11 +420,16 @@ class GitHubAPI(BaseAPI):
         return essential_issues
 
     # Obtém pull requests do repositório
+    def get_pull_request_commits(self, repo_name, pull_number):
+        url = f'https://api.github.com/repos/{repo_name}/pulls/{pull_number}/commits'
+        return self.get_all_pages(url, f'Fetching commits for PR #{pull_number}')
+
     def get_pull_requests(self, repo_name, start_date, end_date, max_workers=None):
         if max_workers is None:
             max_workers = self.max_workers_default
         url = f'https://api.github.com/repos/{repo_name}/pulls'
         params = {
+            'state': 'all',
             'since': f'{start_date}T00:00:01Z',
             'until': f'{end_date}T23:59:59Z',
             'per_page': 35
@@ -423,7 +445,10 @@ class GitHubAPI(BaseAPI):
                     'created_at': pr['created_at']
                 }
                 comments = self.get_comments_with_initial(pr_comments_url, initial_comment, pr['number'], max_workers)
-                
+
+                # Adiciona commits relacionados ao PR
+                commits = self.get_pull_request_commits(repo_name, pr['number'])
+
                 labels = [label['name'] for label in pr.get('labels', [])]
 
                 essential_pull_requests.append({
@@ -432,7 +457,8 @@ class GitHubAPI(BaseAPI):
                     'state': pr['state'],
                     'creator': pr['user']['login'],
                     'comments': comments,
-                    'labels': labels  # Adicionando labels ao dicionário
+                    'labels': labels,
+                    'commits': commits  # Adiciona commits ao PR
                 })
         return essential_pull_requests
 
