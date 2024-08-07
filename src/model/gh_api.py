@@ -430,6 +430,7 @@ class GitHubAPI(BaseAPI):
         url = f'https://api.github.com/repos/{repo_name}/pulls'
         params = {
             'state': 'all',
+            'state': 'all',
             'since': f'{start_date}T00:00:01Z',
             'until': f'{end_date}T23:59:59Z',
             'per_page': 35
