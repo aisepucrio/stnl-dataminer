@@ -57,7 +57,17 @@ class JiraAPI(BaseAPI):
         try:
             response = requests.get(url, headers=headers, auth=HTTPBasicAuth(email, api_token))
             response.raise_for_status()  # Lança uma exceção para códigos de status HTTP de erro
-            return response.json()
+            issuetypes = response.json()
+            
+            # Filtra e remove duplicados com base no campo `name`
+            unique_issuetypes = {}
+            for issuetype in issuetypes:
+                name = issuetype.get('name')
+                untranslated_name = issuetype.get('untranslatedName')
+                if name and untranslated_name and name not in unique_issuetypes:
+                    unique_issuetypes[name] = untranslated_name
+            
+            return unique_issuetypes
         except requests.exceptions.RequestException as e:
             print(f"Erro ao conectar: {e}")
             return None
@@ -69,7 +79,8 @@ class JiraAPI(BaseAPI):
         start_at = 0
         max_results = 50
 
-        jql = f'project={project_key} AND issuetype={task_type}'
+        jql = f'project={project_key} AND issuetype="{task_type}"'
+        #print(f"Collecting tasks with JQL: {jql}")
         if start_date and end_date:
             jql += f' AND created >= "{start_date}" AND created <= "{end_date}"'
 
@@ -84,7 +95,7 @@ class JiraAPI(BaseAPI):
                 'startAt': start_at,
                 'maxResults': max_results
             }
-            auth = (self.email, self.api_token)
+            auth = HTTPBasicAuth(self.email, self.api_token)
             try:
                 response = requests.get(url, params=query, auth=auth)
             except Exception as e:

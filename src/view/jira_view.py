@@ -12,7 +12,7 @@ class JiraApp(BaseView):
 
         # Definir valor padrão para o campo de entrada de URL
         self.url_entry.insert(0, "https://stone-puc.atlassian.net/jira/software/c/projects/CSTONE/boards/3?isInsightsOpen=true")
-
+        #self.url_entry.insert(0, "https://spark-project.atlassian.net/jira/software/c/projects/SPARK/issues")
         # Adiciona opções de mineração específicas do Jira
         self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
         self.epics_switch.pack(pady=5, padx=20, anchor='w')
@@ -24,8 +24,24 @@ class JiraApp(BaseView):
         self.subtasks_switch.pack(pady=5, padx=20, anchor='w')
         self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bugs", font=self.default_font)
         self.bugs_switch.pack(pady=5, padx=20, anchor='w')
-        self.enablers_switch = ctk.CTkSwitch(self.mining_options_frame, text="Enablers", font=self.default_font)
-        self.enablers_switch.pack(pady=5, padx=20, anchor='w')
+
+        # Botão para carregar tipos de issues adicionais
+        self.load_types_button = ctk.CTkButton(self, text="Load Issue Types", command=self.load_issue_types, font=self.default_font, corner_radius=8)
+        self.load_types_button.pack(pady=7, padx=10)
+
+        # Dropdown para tipos de issue adicionais
+        self.additional_task_types_label = ctk.CTkLabel(self, text="Additional Task Types", font=self.default_font)
+        self.additional_task_types_label.pack(pady=5, padx=10)
+        self.additional_task_types = ctk.CTkComboBox(self, values=[], font=self.default_font)
+        self.additional_task_types.pack(pady=7, padx=10)
+
+    # Função para carregar tipos de issues adicionais
+    def load_issue_types(self):
+        url = self.url_entry.get()
+        issue_types = self.controller.load_issue_types(url)
+        standard_types = ['Epic', 'Story', 'Task', 'Sub-task', 'Bug']
+        additional_types = [untranslated_name for translated_name, untranslated_name in issue_types.items() if untranslated_name not in standard_types]
+        self.additional_task_types.configure(values=additional_types)
 
     # Função para iniciar a mineração de dados
     def mine_data(self):
@@ -44,19 +60,20 @@ class JiraApp(BaseView):
             task_types.append('Sub-task')
         if self.bugs_switch.get() == 1:
             task_types.append('Bug')
-        if self.enablers_switch.get() == 1:
-            task_types.append('Enabler')
+
+        additional_task_types = [self.additional_task_types.get()]
+        print(f"Additional task types: {additional_task_types}")
 
         # Função para coletar dados em uma thread separada
         def collect_data():
             try:
                 self.result_label.configure(text="Retrieving information, please wait...")
 
-                total_tasks = len(task_types)
+                total_tasks = len(task_types) + len(additional_task_types)
                 self.progress_bar.set(0)
                 progress_step = 1 / total_tasks if total_tasks > 0 else 1
 
-                data = self.controller.mine_data(url, start_date, end_date, task_types, self.update_progress, progress_step)
+                data = self.controller.mine_data(url, start_date, end_date, task_types, additional_task_types, self.update_progress, progress_step)
                 if data is None:
                     self.result_label.configure(text="Process stopped by the user.")
                     return
