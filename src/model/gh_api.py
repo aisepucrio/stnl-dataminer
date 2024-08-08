@@ -371,30 +371,57 @@ class GitHubAPI(BaseAPI):
             essential_commits = []
             
             for commit in repo:
+                commit_data = {
+                    'sha': commit.hash,
+                    'message': commit.msg,
+                    'date': self.convert_to_iso8601(commit.author_date),
+                    'author': {
+                        'name': None,
+                        'email': None
+                    },
+                    'committer': {
+                        'name': None,
+                        'email': None
+                    },
+                    'lines': {
+                        'insertions': commit.insertions,
+                        'deletions': commit.deletions,
+                        'files': commit.files
+                    },
+                    'in_main_branch': commit.in_main_branch,
+                    'merge': commit.merge,
+                    'dmm_unit_size': None,
+                    'dmm_unit_complexity': None,
+                    'dmm_unit_interfacing': None,
+                    'modified_files': []
+                }
+                
+                # Process author
                 try:
-                    commit_data = {
-                        'sha': commit.hash,
-                        'message': commit.msg,
-                        'date': self.convert_to_iso8601(commit.author_date),
-                        'author': {
-                            'name': commit.author.name,
-                            'email': commit.author.email
-                        },
-                        'committer': {
-                            'name': commit.committer.name,
-                            'email': commit.committer.email
-                        },
-                        'lines': {
-                            'insertions': commit.insertions,
-                            'deletions': commit.deletions,
-                            'files': commit.files
-                        },
-                        'in_main_branch': commit.in_main_branch,
-                        'merge': commit.merge,
-                        'dmm_unit_size': commit.dmm_unit_size,
-                        'dmm_unit_complexity': commit.dmm_unit_complexity,
-                        'dmm_unit_interfacing': commit.dmm_unit_interfacing,
-                        'modified_files': [{
+                    commit_data['author']['name'] = commit.author.name
+                    commit_data['author']['email'] = commit.author.email
+                except Exception as e:
+                    print(f"Erro ao processar autor do commit {commit.hash}: {e}")
+                
+                # Process committer
+                try:
+                    commit_data['committer']['name'] = commit.committer.name
+                    commit_data['committer']['email'] = commit.committer.email
+                except Exception as e:
+                    print(f"Erro ao processar committer do commit {commit.hash}: {e}")
+                
+                # Process DMM metrics
+                try:
+                    commit_data['dmm_unit_size'] = commit.dmm_unit_size
+                    commit_data['dmm_unit_complexity'] = commit.dmm_unit_complexity
+                    commit_data['dmm_unit_interfacing'] = commit.dmm_unit_interfacing
+                except Exception as e:
+                    print(f"Erro ao processar DMM metrics do commit {commit.hash}: {e}")
+                
+                # Process modified files
+                for mod in commit.modified_files:
+                    try:
+                        mod_data = {
                             'old_path': mod.old_path,
                             'new_path': mod.new_path,
                             'filename': mod.filename,
@@ -403,19 +430,34 @@ class GitHubAPI(BaseAPI):
                             'added_lines': mod.added_lines,
                             'deleted_lines': mod.deleted_lines,
                             'complexity': mod.complexity,
-                            'methods': [{
-                                'name': method.name,
-                                'complexity': method.complexity,
-                                'max_nesting': method.max_nesting
-                            } for method in mod.methods]
-                        } for mod in commit.modified_files]
-                    }
-                    essential_commits.append(commit_data)
-                except Exception as e:
-                    print(f"Erro ao processar commit {commit.hash}: {e}")
+                            'methods': []
+                        }
+                        
+                        # Process methods
+                        for method in mod.methods:
+                            try:
+                                method_data = {
+                                    'name': method.name,
+                                    'complexity': method.complexity,
+                                    'max_nesting': None
+                                }
+                                try:
+                                    method_data['max_nesting'] = method.max_nesting
+                                except AttributeError:
+                                    print(f"Commit {commit.hash}: 'Method' object has no attribute 'max_nesting'")
+                                
+                                mod_data['methods'].append(method_data)
+                            except Exception as e:
+                                print(f"Erro ao processar método {method.name} do arquivo {mod.filename} no commit {commit.hash}: {e}")
 
+                        commit_data['modified_files'].append(mod_data)
+                    except Exception as e:
+                        print(f"Erro ao processar arquivo modificado {mod.filename} no commit {commit.hash}: {e}")
+
+                essential_commits.append(commit_data)
+            
             return essential_commits
-        
+
         except Exception as e:
             print(f"Erro ao acessar o repositório: {e}")
             return []
