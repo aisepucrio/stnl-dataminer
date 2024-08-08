@@ -351,14 +351,14 @@ class GitHubAPI(BaseAPI):
         return date.isoformat()
 
     # Obtém commits usando a biblioteca Pydriller
-    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None = None) -> list:
+    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None = None) -> list[dict]:
         try:
             # Parsing dates
             start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ') if start_date else datetime.min
             end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ') if end_date else datetime.now()
 
-            max_workers = max_workers if max_workers is not None else self.max_workers_default
-            clone_path = clone_path if clone_path is not None else os.path.join(GitHubAPI.user_home_directory(), 'GitHubClones')
+            max_workers = max_workers if max_workers is not None else 4
+            clone_path = clone_path if clone_path is not None else os.path.join(self.user_home_directory(), 'GitHubClones')
 
             # Check if repository exists locally
             if self.repo_exists(repo_name, clone_path):
@@ -376,13 +376,38 @@ class GitHubAPI(BaseAPI):
                         'sha': commit.hash,
                         'message': commit.msg,
                         'date': self.convert_to_iso8601(commit.author_date),
-                        'author': commit.author.name,
-                        'diffs': [{
+                        'author': {
+                            'name': commit.author.name,
+                            'email': commit.author.email
+                        },
+                        'committer': {
+                            'name': commit.committer.name,
+                            'email': commit.committer.email
+                        },
+                        'lines': {
+                            'insertions': commit.insertions,
+                            'deletions': commit.deletions,
+                            'files': commit.files
+                        },
+                        'in_main_branch': commit.in_main_branch,
+                        'merge': commit.merge,
+                        'dmm_unit_size': commit.dmm_unit_size,
+                        'dmm_unit_complexity': commit.dmm_unit_complexity,
+                        'dmm_unit_interfacing': commit.dmm_unit_interfacing,
+                        'modified_files': [{
                             'old_path': mod.old_path,
                             'new_path': mod.new_path,
+                            'filename': mod.filename,
+                            'change_type': mod.change_type.name,
                             'diff': mod.diff,
                             'added_lines': mod.added_lines,
-                            'deleted_lines': mod.deleted_lines
+                            'deleted_lines': mod.deleted_lines,
+                            'complexity': mod.complexity,
+                            'methods': [{
+                                'name': method.name,
+                                'complexity': method.complexity,
+                                'max_nesting': method.max_nesting
+                            } for method in mod.methods]
                         } for mod in commit.modified_files]
                     }
                     essential_commits.append(commit_data)
