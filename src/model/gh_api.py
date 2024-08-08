@@ -4,6 +4,7 @@ import datetime
 import customtkinter as ctk
 import regex as re
 import threading
+import socket
 from tqdm import tqdm
 from pydriller import Repository
 from urllib.parse import urlparse, urlencode
@@ -33,6 +34,7 @@ class CloneProgress(RemoteProgress):
 class GitHubAPI(BaseAPI):
     def __init__(self, view=None):
         super().__init__()
+        self.check_internet_connection()
         self.view = view
         self.headers = {'Accept': 'application/vnd.github.v3+json'}
         self.auth = None
@@ -257,6 +259,7 @@ class GitHubAPI(BaseAPI):
     def clone_repo(self, repo_url, clone_path):
         if self.view:
             self.view.show_temp_message("Please wait while cloning the repository...")
+        
         Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
         if self.view:
             self.view.show_temp_message("Cloning complete.")
