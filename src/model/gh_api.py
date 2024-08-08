@@ -348,47 +348,49 @@ class GitHubAPI(BaseAPI):
         return date.isoformat()
 
     # Obtém commits usando a biblioteca Pydriller
-    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None  = None) -> list:
+    def get_commits_pydriller(self, repo_name: str, start_date: str, end_date: str, max_workers: int | None = 4, clone_path: str | None = None) -> list:
+        try:
+            # Parsing dates
+            start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ') if start_date else datetime.min
+            end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ') if end_date else datetime.now()
 
-        if start_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%dT%H:%M:%SZ')
-        else:
-            start_date = datetime.min
+            max_workers = max_workers if max_workers is not None else self.max_workers_default
+            clone_path = clone_path if clone_path is not None else os.path.join(GitHubAPI.user_home_directory(), 'GitHubClones')
 
-        if end_date:
-            end_date = datetime.strptime(end_date, '%Y-%m-%dT%H:%M:%SZ')
-        else:
-            end_date = datetime.now()
+            # Check if repository exists locally
+            if self.repo_exists(repo_name, clone_path):
+                repo_path = os.path.join(clone_path, repo_name.split('/')[1])
+                repo = Repository(repo_path, since=start_date, to=end_date).traverse_commits()
+            else:
+                repo_url = f'https://github.com/{repo_name}'
+                repo = Repository(repo_url, since=start_date, to=end_date).traverse_commits()
 
-        if max_workers is None:
-            max_workers = self.max_workers_default
+            essential_commits = []
+            
+            for commit in repo:
+                try:
+                    commit_data = {
+                        'sha': commit.hash,
+                        'message': commit.msg,
+                        'date': self.convert_to_iso8601(commit.author_date),
+                        'author': commit.author.name,
+                        'diffs': [{
+                            'old_path': mod.old_path,
+                            'new_path': mod.new_path,
+                            'diff': mod.diff,
+                            'added_lines': mod.added_lines,
+                            'deleted_lines': mod.deleted_lines
+                        } for mod in commit.modified_files]
+                    }
+                    essential_commits.append(commit_data)
+                except Exception as e:
+                    print(f"Erro ao processar commit {commit.hash}: {e}")
 
-        if clone_path is None:
-            clone_path = GitHubAPI.user_home_directory() + '/GitHubClones'
-
-        if self.repo_exists(repo_name, clone_path):
-            repo = Repository(clone_path + '/' + repo_name.split('/')[1], since=start_date, to=end_date).traverse_commits()
-        else:
-            repo_url = 'https://github.com/' + repo_name
-            repo = Repository(repo_url, since=start_date, to=end_date).traverse_commits()
-
-        commits = list(repo)
-
-        essential_commits = [{
-            'sha': commit.hash,
-            'message': commit.msg,
-            'date': self.convert_to_iso8601(commit.author_date),
-            'author': commit.author.name,
-            'diffs': [{
-                'old_path': mod.old_path,
-                'new_path': mod.new_path,
-                'diff': mod.diff,
-                'added_lines': mod.added_lines,
-                'deleted_lines': mod.deleted_lines
-            } for mod in commit.modified_files]
-        } for commit in commits]
-
-        return essential_commits
+            return essential_commits
+        
+        except Exception as e:
+            print(f"Erro ao acessar o repositório: {e}")
+            return []
     
     # Obtém issues do repositório
     def get_issues(self, repo_name, start_date, end_date, max_workers=None):

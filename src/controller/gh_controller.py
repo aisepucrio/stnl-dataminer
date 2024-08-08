@@ -14,7 +14,7 @@ class GitHubController(BaseController):
         super().__init__()
         self.view = view
         print(int(os.getenv('USE_DATABASE')))
-        self.db = Database() if int(os.getenv('USE_DATABASE')) else None
+        self.db = Database() if int(os.getenv('USE_DATABASE')) == '1' else None
         self.verify_database_credentials()
         self.max_workers_default = int(os.getenv('MAX_WORKERS', '4'))
         self.api = GitHubAPI(view)
@@ -32,7 +32,7 @@ class GitHubController(BaseController):
         if self.db:
             self.db.create_schema_and_tables(repo_name)
         else:
-            print("Skipping database operations due to connection issues.")
+            print("\nSkipping database operations")
         
         # Formata as datas de início e fim no formato ISO
         start_date_iso = start_date.strftime('%Y-%m-%d') + 'T00:00:01Z'
@@ -86,10 +86,9 @@ class GitHubController(BaseController):
 
         # Salva os dados coletados em um arquivo JSON
         save_path = self.get_save_path()
-        print(f'Saving data to {save_path}')
         file_path = os.path.join(save_path, f"{repo_name.replace('/', '_').replace('-', '_')}.json")
         print(f'Saving data to {file_path}')
         self.save_to_json(data, file_path)
-        messagebox.showinfo("Success", f"Data has been successfully mined and saved to {file_path}")
-        
+        self.view.after(0, lambda: messagebox.showinfo("Success", f"Data has been successfully mined and saved to {file_path}", parent=self.view))
+
         return data

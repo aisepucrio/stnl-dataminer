@@ -24,9 +24,16 @@ class CTkListbox(ctk.CTkFrame):
 
 # Classe para a aplicação de configurações
 class SettingsApp(ctk.CTk):
-    def __init__(self, menu_app):
+    def __init__(self, menu_app, tokens, usernames, emails, api_tokens, save_path, max_workers, use_database):
         super().__init__()
         self.menu_app = menu_app
+        self.tokens = tokens
+        self.usernames = usernames
+        self.emails = emails
+        self.api_tokens = api_tokens
+        self.save_path = save_path
+        self.max_workers = max_workers
+        self.use_database = use_database
         self.title("Settings")
         self.geometry("800x750")  # Definindo dimensões específicas da janela
         ctk.set_appearance_mode('dark')
