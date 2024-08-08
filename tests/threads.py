@@ -7,3 +7,5 @@ print(f"Número de threads do processador: {num_threads}")
 # Obter o número de núcleos físicos do processador
 num_nucleos_fisicos = psutil.cpu_count(logical=False)
 print(f"Número de núcleos físicos do processador: {num_nucleos_fisicos}")
+
+

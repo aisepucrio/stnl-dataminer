@@ -1,6 +1,6 @@
 import customtkinter as ctk
-import os  
-from dotenv import load_dotenv, set_key, dotenv_values
+import os
+from dotenv import set_key, dotenv_values
 from tkinter import font as tkfont, messagebox, Toplevel, Listbox, filedialog
 
 # Classe personalizada de Listbox
@@ -39,7 +39,6 @@ class SettingsApp(ctk.CTk):
 
         # Carrega variáveis de ambiente
         self.env_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
-        self.load_env()
 
         self.create_widgets()
 
@@ -62,60 +61,10 @@ class SettingsApp(ctk.CTk):
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
 
-    # Função para carregar as variáveis de ambiente
-    def load_env(self):
-        default_env_content = """TOKENS=
-    USERNAMES=
-    EMAIL=
-    API_TOKEN=
-    SAVE_PATH=
-    MAX_WORKERS='4'
-    PG_HOST=opus.servehttp.com
-    PG_DATABASE=aise-stone
-    PG_USER=aise-stone
-    PG_PASSWORD=#St@n3L@b2@24!
-    PG_PORT=54321
-    USE_DATABASE='0'
-    """
-        if not os.path.exists(self.env_file):
-            with open(self.env_file, 'w') as f:
-                f.write(default_env_content)
-
-        load_dotenv(self.env_file)
-
-        env_values = dotenv_values(self.env_file)
-        self.tokens = env_values.get('TOKENS', '').split(',')
-        self.usernames = env_values.get('USERNAMES', '').split(',')
-        self.emails = env_values.get('EMAIL', '').split(',')
-        self.api_tokens = env_values.get('API_TOKEN', '').split(',')
-        self.save_path = env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
-        max_workers_str = env_values.get('MAX_WORKERS', '4')
-        self.max_workers = int(max_workers_str) if max_workers_str else 1
-        self.use_database = env_values.get('USE_DATABASE', '0') == '1'
-
-        # Garante que todas as chaves necessárias estão presentes no arquivo .env
-        self.ensure_env_key('TOKENS')
-        self.ensure_env_key('USERNAMES')
-        self.ensure_env_key('EMAIL')
-        self.ensure_env_key('API_TOKEN')
-        self.ensure_env_key('SAVE_PATH')
-        self.ensure_env_key('MAX_WORKERS', '4')
-        self.ensure_env_key('PG_HOST', 'opus.servehttp.com')
-        self.ensure_env_key('PG_DATABASE', 'aise-stone')
-        self.ensure_env_key('PG_USER', 'aise-stone')
-        self.ensure_env_key('PG_PASSWORD', '#St@n3L@b2@24!')
-        self.ensure_env_key('PG_PORT', '54321')
-        self.ensure_env_key('USE_DATABASE', '0')
-
     def database_checkbox_command(self):
         self.database_checkbox_value = self.database_checkbox.get()
         
         set_key(self.env_file, 'USE_DATABASE', '1' if self.database_checkbox_value else '0')
-
-    # Função para garantir que uma chave está presente no arquivo .env
-    def ensure_env_key(self, key, default_value=''):
-        if key not in dotenv_values(self.env_file):
-            set_key(self.env_file, key, default_value)
 
     # Função para criar os widgets
     def create_widgets(self):

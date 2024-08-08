@@ -1,6 +1,7 @@
 import tkinter as tk
 import platform
 import os
+import psutil
 from tkinter import PhotoImage 
 from PIL import Image, ImageTk, ImageDraw
 from tkinter import font as tkfont
@@ -37,11 +38,67 @@ class DataMinerApp():
         
         self.set_initial_env_variables()
 
+        self.load_env()
+
         self.create_widgets()
 
         self.check_for_exit_key()
 
-    # Definindo um valor inicial para 'USE_DATABASE' como 0
+    # Função para garantir que uma chave está presente no arquivo .env
+    def ensure_env_key(self, key, default_value=''):
+        if key not in dotenv_values(self.env_file):
+            set_key(self.env_file, key, default_value)
+
+    def number_of_threads(self):
+        number_of_threads = psutil.cpu_count(logical=True)
+        return number_of_threads
+
+        # Função para carregar as variáveis de ambiente
+    def load_env(self):
+        default_env_content = f"""TOKENS=
+    USERNAMES=
+    EMAIL=
+    API_TOKEN=
+    SAVE_PATH=
+    MAX_WORKERS={self.number_of_threads()//2}
+    PG_HOST=opus.servehttp.com
+    PG_DATABASE=aise-stone
+    PG_USER=aise-stone
+    PG_PASSWORD=#St@n3L@b2@24!
+    PG_PORT=54321
+    USE_DATABASE='0'
+    """
+        if not os.path.exists(self.env_file):
+            with open(self.env_file, 'w') as f:
+                f.write(default_env_content)
+
+        load_dotenv(self.env_file)
+
+        self.env_values = dotenv_values(self.env_file)
+        self.tokens = self.env_values.get('TOKENS', '').split(',')
+        self.usernames = self.env_values.get('USERNAMES', '').split(',')
+        self.emails = self.env_values.get('EMAIL', '').split(',')
+        self.api_tokens = self.env_values.get('API_TOKEN', '').split(',')
+        self.save_path = self.env_values.get('SAVE_PATH', os.path.join(os.path.expanduser("~"), "Downloads"))
+        self.max_workers_str = self.env_values.get('MAX_WORKERS', f'{self.number_of_threads()//2}')
+        self.max_workers = int(self.max_workers_str) if self.max_workers_str else 1
+        self.use_database = self.env_values.get('USE_DATABASE', '0') == '1'
+
+        # Garante que todas as chaves necessárias estão presentes no arquivo .env
+        self.ensure_env_key('TOKENS')
+        self.ensure_env_key('USERNAMES')
+        self.ensure_env_key('EMAIL')
+        self.ensure_env_key('API_TOKEN')
+        self.ensure_env_key('SAVE_PATH')
+        self.ensure_env_key('MAX_WORKERS', f'{self.number_of_threads()//2}')
+        self.ensure_env_key('PG_HOST', 'opus.servehttp.com')
+        self.ensure_env_key('PG_DATABASE', 'aise-stone')
+        self.ensure_env_key('PG_USER', 'aise-stone')
+        self.ensure_env_key('PG_PASSWORD', '#St@n3L@b2@24!')
+        self.ensure_env_key('PG_PORT', '54321')
+        self.ensure_env_key('USE_DATABASE', '0')
+
+    # Definindo valores iniciais para as variáveis de ambiente
     def set_initial_env_variables(self):
         if 'USE_DATABASE' not in self.env_values:
             set_key(self.env_file, 'USE_DATABASE', '0')
