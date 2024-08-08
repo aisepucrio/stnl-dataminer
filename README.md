@@ -64,3 +64,5 @@ python main.py
 - **Number of Max Workers:** O número de threads que seu computador irá usar.
 
 5. Após inserir e clicar em "Add", você pode fechar a janela e selecionar a plataforma que deseja utilizar no framework.
+
+**Observação:** Para o funcionamento ideal do framework, é recomendado que tenha pelo menos 2 tokens.
