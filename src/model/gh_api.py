@@ -47,7 +47,7 @@ class GitHubAPI(BaseAPI):
     def handle_rate_limit(self, response):
         url = "https://api.github.com/rate_limit"
         headers = {
-            "Authorization": f"token {self.tokens[0]}"
+            "Authorization": f"token {self.tokens[self.current_token_index]}"
         }
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
@@ -191,6 +191,7 @@ class GitHubAPI(BaseAPI):
 
                 rate_limit_remaining = self.handle_rate_limit(response)
                 if rate_limit_remaining < 100:
+                    print(f"Token limit is low ({rate_limit_remaining} remaining). Rotating token...")
                     attempts += 1
                 else:
                     data = response.json()
