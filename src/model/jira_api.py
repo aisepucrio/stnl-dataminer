@@ -3,8 +3,8 @@ import os
 from urllib.parse import urlparse
 from dotenv import load_dotenv
 from model.base_api import BaseAPI
-
-#TODO Pelo amor de deus coloque um função para validar o token do Jira
+from requests.auth import HTTPBasicAuth
+import re
 
 # Classe para interações com a API do Jira
 class JiraAPI(BaseAPI):
@@ -13,6 +13,14 @@ class JiraAPI(BaseAPI):
         self.reload_env()
         self.email = os.getenv('EMAIL')
         self.api_token = os.getenv('API_TOKEN')
+
+    # Método para validar o token do Jira
+    def validate_jira_token(self, api_token):
+        # Define o padrão regex para o token fornecido
+        padrao = r'^ATATT3xFfGF0[a-zA-Z0-9_\-]+=[0-9A-F]+$'
+        
+        # Verifica se o token corresponde ao padrão
+        return bool(re.match(padrao, api_token))
 
     # Método para recarregar variáveis de ambiente
     def reload_env(self):
@@ -37,6 +45,32 @@ class JiraAPI(BaseAPI):
         response.raise_for_status()
         fields = response.json()
         return {field['id']: field['name'] for field in fields if field['id'].startswith('customfield')}
+    
+    # Busca tipos de tarefas do Jira
+    def get_issuetypes(self, jira_domain, email, api_token):
+        url = f"https://{jira_domain}/rest/api/3/issuetype"
+        
+        headers = {
+            "Accept": "application/json"
+        }
+        
+        try:
+            response = requests.get(url, headers=headers, auth=HTTPBasicAuth(email, api_token))
+            response.raise_for_status()  # Lança uma exceção para códigos de status HTTP de erro
+            issuetypes = response.json()
+            
+            # Filtra e remove duplicados com base no campo `name`
+            unique_issuetypes = {}
+            for issuetype in issuetypes:
+                name = issuetype.get('name')
+                untranslated_name = issuetype.get('untranslatedName')
+                if name and untranslated_name and name not in unique_issuetypes:
+                    unique_issuetypes[name] = untranslated_name
+            
+            return unique_issuetypes
+        except requests.exceptions.RequestException as e:
+            print(f"Erro ao conectar: {e}")
+            return None
 
     # Coleta tarefas do Jira
     def collect_tasks(self, jira_domain, project_key, task_type, start_date, end_date, stop_collecting):
@@ -45,7 +79,8 @@ class JiraAPI(BaseAPI):
         start_at = 0
         max_results = 50
 
-        jql = f'project={project_key} AND issuetype={task_type}'
+        jql = f'project={project_key} AND issuetype="{task_type}"'
+        #print(f"Collecting tasks with JQL: {jql}")
         if start_date and end_date:
             jql += f' AND created >= "{start_date}" AND created <= "{end_date}"'
 
@@ -60,7 +95,7 @@ class JiraAPI(BaseAPI):
                 'startAt': start_at,
                 'maxResults': max_results
             }
-            auth = (self.email, self.api_token)
+            auth = HTTPBasicAuth(self.email, self.api_token)
             try:
                 response = requests.get(url, params=query, auth=auth)
             except Exception as e:
