@@ -2,8 +2,7 @@ import customtkinter as ctk
 import threading
 from controller.jira_controller import JiraController
 from view.base_view import BaseView
-from tkinter import Listbox, MULTIPLE
-
+from tkinter import StringVar
 # Classe para a aplicação de mineração de dados do Jira
 class JiraApp(BaseView):
     def __init__(self, menu_app):
@@ -30,11 +29,14 @@ class JiraApp(BaseView):
         self.load_types_button = ctk.CTkButton(self, text="Load Issue Types", command=self.load_issue_types, font=self.default_font, corner_radius=8)
         self.load_types_button.pack(pady=7, padx=10)
 
-        # Listbox para tipos de issue adicionais
+        # CTkFrame para tipos de issue adicionais
         self.additional_task_types_label = ctk.CTkLabel(self, text="Additional Task Types", font=self.default_font)
         self.additional_task_types_label.pack(pady=5, padx=10)
-        self.additional_task_types = Listbox(self, selectmode=MULTIPLE, font=self.default_font)
-        self.additional_task_types.pack(pady=7, padx=10)
+        self.additional_task_types_frame = ctk.CTkFrame(self, width=200, height=100, fg_color="gray20")
+        self.additional_task_types_frame.pack(pady=7, padx=10, anchor='center')
+
+        # Lista para armazenar os estados dos CTkCheckBox
+        self.additional_task_types_vars = []
 
     # Função para carregar tipos de issues adicionais
     def load_issue_types(self):
@@ -45,15 +47,20 @@ class JiraApp(BaseView):
         
         print(f"Additional types: {additional_types}")  # Debug statement
 
-        self.additional_task_types.delete(0, 'end')  # Limpa a listbox antes de adicionar novos itens
-        for item in additional_types:
-            self.additional_task_types.insert('end', item)
-        if additional_types:
-            self.additional_task_types.selection_set(0)  # Define o valor padrão para o primeiro item
+        # Limpa o frame antes de adicionar novos itens
+        for widget in self.additional_task_types_frame.winfo_children():
+            widget.destroy()
+        self.additional_task_types_vars.clear()
 
-    # Função para obter os itens selecionados no Listbox
+        for item in additional_types:
+            var = ctk.StringVar(value=item)
+            chk = ctk.CTkCheckBox(self.additional_task_types_frame, text=item, variable=var, onvalue=item, offvalue='')
+            chk.pack(anchor='w', padx=10, pady=5)
+            self.additional_task_types_vars.append(var)
+
+    # Função para obter os itens selecionados no CTkCheckBox
     def get_selected_additional_task_types(self):
-        return [self.additional_task_types.get(i) for i in self.additional_task_types.curselection()]
+        return [var.get() for var in self.additional_task_types_vars if var.get()]
 
     # Função para iniciar a mineração de dados
     def mine_data(self):
