@@ -81,14 +81,6 @@ class BaseView(ctk.CTk):
         self.menu_app.deiconify()
         self.destroy()
 
-    # Função de mineração de dados (a ser implementada nas subclasses)
-    def mine_data(self):
-        pass
-
-    # Função para parar o processo (a ser implementada nas subclasses)
-    def stop_process(self):
-        pass
-
     # Função para executar a aplicação
     def run(self):
         self.mainloop()
