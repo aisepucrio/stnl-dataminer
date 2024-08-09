@@ -2,7 +2,7 @@ import customtkinter as ctk
 import threading
 from controller.jira_controller import JiraController
 from view.base_view import BaseView
-from tkinter import StringVar
+
 # Classe para a aplicação de mineração de dados do Jira
 class JiraApp(BaseView):
     def __init__(self, menu_app):
@@ -25,18 +25,16 @@ class JiraApp(BaseView):
         self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bugs", font=self.default_font)
         self.bugs_switch.pack(pady=5, padx=20, anchor='w')
 
-        # Botão para carregar tipos de issues adicionais
-        self.load_types_button = ctk.CTkButton(self, text="Load Issue Types", command=self.load_issue_types, font=self.default_font, corner_radius=8)
-        self.load_types_button.pack(pady=7, padx=10)
+        # Frame para os tipos de issue adicionais
+        self.additional_issues_label = ctk.CTkLabel(self.additional_issues_frame, text="Additional Task Types", font=self.default_font)
+        self.additional_issues_label.pack(pady=5, padx=10)
 
-        # CTkFrame para tipos de issue adicionais
-        self.additional_task_types_label = ctk.CTkLabel(self, text="Additional Task Types", font=self.default_font)
-        self.additional_task_types_label.pack(pady=5, padx=10)
-        self.additional_task_types_frame = ctk.CTkFrame(self, width=200, height=100, fg_color="gray20")
-        self.additional_task_types_frame.pack(pady=7, padx=10, anchor='center')
+        # Botão para carregar tipos de issues adicionais (com ícone, se disponível)
+        self.load_types_button = ctk.CTkButton(self, text="", command=self.load_issue_types, width=32, height=32)
+        self.load_types_button.pack(side="right", padx=5)
 
         # Lista para armazenar os estados dos CTkCheckBox
-        self.additional_task_types_vars = []
+        self.additional_issues_vars = []
 
     # Função para carregar tipos de issues adicionais
     def load_issue_types(self):
@@ -48,15 +46,15 @@ class JiraApp(BaseView):
         print(f"Additional types: {additional_types}")  # Debug statement
 
         # Limpa o frame antes de adicionar novos itens
-        for widget in self.additional_task_types_frame.winfo_children():
+        for widget in self.additional_issues_frame.winfo_children():
             widget.destroy()
-        self.additional_task_types_vars.clear()
+        self.additional_issues_vars.clear()
 
         for item in additional_types:
             var = ctk.StringVar(value=item)
-            chk = ctk.CTkCheckBox(self.additional_task_types_frame, text=item, variable=var, onvalue=item, offvalue='')
+            chk = ctk.CTkCheckBox(self.additional_issues_frame, text=item, variable=var, onvalue=item, offvalue='')
             chk.pack(anchor='w', padx=10, pady=5)
-            self.additional_task_types_vars.append(var)
+            self.additional_issues_vars.append(var)
 
     # Função para obter os itens selecionados no CTkCheckBox
     def get_selected_additional_task_types(self):

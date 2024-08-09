@@ -46,6 +46,10 @@ class BaseView(ctk.CTk):
         self.mining_options_frame = ctk.CTkFrame(self)
         self.mining_options_frame.pack(pady=20)
 
+        # Frame para os tipos de issue adicionais
+        self.additional_issues_frame = ctk.CTkFrame(self)
+        self.additional_issues_frame.pack(pady=7, padx=10, anchor='center')
+
         # Botão para iniciar a mineração de dados
         self.mine_button = ctk.CTkButton(self, text="Mine Data", command=self.mine_data, font=self.default_font, corner_radius=8)
         self.mine_button.pack(pady=7, padx=10)
