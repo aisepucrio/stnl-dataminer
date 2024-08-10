@@ -20,8 +20,14 @@ class TestAPIEndpoints:
         response = requests.get(f"{self.BASE_URL}/get-commits-pydriller/{repo_name}")
         print(response.json())
 
+    def test_set_max_workers(self, max_workers):
+        response = requests.get(f"{self.BASE_URL}/set-max-workers-to/{max_workers}")
+        print(response.json())
+
+    def test_add_github_credentials(self, username, token):
+        response = requests.post(f"{self.BASE_URL}/add_github_credentials/{username}/{token}")
+        print(response.json())
+
 # Rodar os testes com pytest
 
 tests = TestAPIEndpoints()
-
-tests.test_get_tokens()
