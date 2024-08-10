@@ -48,4 +48,19 @@ class BaseAPI:
             print(f'MAX_WORKERS updated in {dotenv_path}')
         else:
             print('.env file not found')
+
+    def get_max_workers(self):
+        return os.environ.get("MAX_WORKERS", "not set")
+    
+    def usage_of_database(self, database_usage):
+        if database_usage:
+            set_key(find_dotenv(), "USE_DATABASE", "1")
+            return "Database usage is enabled"
+        else:
+            set_key(find_dotenv(), "USE_DATABASE", "0")
+            return "Database usage is disabled"
+        
+    def set_save_path(self, save_path):
+        set_key(find_dotenv(), "SAVE_PATH", save_path)
+        return f'SAVE_PATH updated to {save_path}'
     

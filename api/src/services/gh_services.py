@@ -273,6 +273,5 @@ class GitHubAPI(BaseAPI):
         else:
             print('.env file not found')
 
-# Adicionando funções para obter issues, branches e PRs
-
-    
+    def get_github_credentials(self):
+        return self.usernames, self.tokens
