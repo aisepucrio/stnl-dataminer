@@ -2,7 +2,7 @@ import os
 import json
 import socket
 from tkinter import messagebox
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key, find_dotenv
 
 # Classe base para interações com APIs
 class BaseAPI:
@@ -11,8 +11,7 @@ class BaseAPI:
 
     # Método para recarregar variáveis de ambiente
     def load_env(self):
-        load_dotenv(override=True)
-        print("\nVariáveis de ambiente carregadas\n")
+        load_dotenv()
 
     # Método para salvar dados em formato JSON
     def save_to_json(self, data, filename):
@@ -35,5 +34,18 @@ class BaseAPI:
         except OSError:
             print("You are not connected to the internet")
             return "You are not connected to the internet"
+        
+    def set_max_workers(self, max_workers):
+        # Primeiro, alterar o valor na variável de ambiente
+        print(f'Actual max workers: {os.environ.get("MAX_WORKERS", "not set")}')
+        os.environ["MAX_WORKERS"] = str(max_workers)
+        print(f'New max workers: {os.environ["MAX_WORKERS"]}')
 
+        # Agora, atualizar o valor no arquivo .env
+        dotenv_path = find_dotenv()
+        if dotenv_path:
+            set_key(dotenv_path, "MAX_WORKERS", str(max_workers))
+            print(f'MAX_WORKERS updated in {dotenv_path}')
+        else:
+            print('.env file not found')
     

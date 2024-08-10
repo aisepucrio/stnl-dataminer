@@ -10,7 +10,7 @@ from pydriller import Repository
 from urllib.parse import urlparse, urlencode
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key, find_dotenv
 from git import Repo, RemoteProgress, GitCommandError
 from tkinter import messagebox
 from src.services.base_services import BaseAPI
@@ -41,11 +41,9 @@ class GitHubAPI(BaseAPI):
     def convert_to_iso8601(self, date):
         return date.isoformat()
 
-
     def load_tokens(self):
         try:
             env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '.env')
-            print(env_path)
 
             with open(env_path) as f:
                 for line in f:
@@ -66,12 +64,10 @@ class GitHubAPI(BaseAPI):
 
     # Função para validar token do GitHub
     def validate_tokens(self, tokens):
-        github_token_regex = re.compile(r'(ghp|gho|ghu|ghr|ghs|ghb|github_pat)_[a-zA-Z0-9]{36}')
+        github_token_regex = re.compile(r'(ghp|gho|ghu|ghr|ghs|ghb|github_pat)_[a-zA-Z0-9]{36,40}')
         for token in tokens:
             if not github_token_regex.match(token):
-                print(f"Invalid GitHub token: '{token}'. Please check the .env file.")
-                messagebox.showinfo("Error", f"Invalid GitHub token: '{token}'. Please check the .env file.")
-                exit(1)
+                print(f"\nInvalid GitHub token: '{token}'. Please check the .env file.\n")
 
     # Obtém diretório inicial do usuário
     @staticmethod
@@ -242,7 +238,41 @@ class GitHubAPI(BaseAPI):
             print(f"Erro ao acessar o repositório: {e}")
             return f"Erro ao processar repositório '{repo_name}': {e}"
 
-    def get_tokens(self):
-        return self.tokens
+    def add_github_credentials(self, username, token):
+        dotenv_path = find_dotenv()
+        tokens = ""
+        usernames = ""
 
-            
+        if dotenv_path:
+            # Carregar os valores atuais das variáveis TOKENS e USERNAMES do arquivo .env
+            tokens = os.environ.get("TOKENS", "")
+            usernames = os.environ.get("USERNAMES", "")
+
+            if tokens and usernames:
+                print(f'Tokens atuais: {tokens}')
+                print(f'Usernames atuais: {usernames}')
+            else:
+                print('Nenhum token ou username existente encontrado.')
+
+            # Adicionar o novo token e username às listas
+            if tokens:
+                tokens += f",{token}"
+                usernames += f",{username}"
+            else:
+                tokens = token
+                usernames = username
+
+            # Atualizar as variáveis de ambiente e no arquivo .env
+            os.environ["TOKENS"] = tokens
+            os.environ["USERNAMES"] = usernames
+            set_key(dotenv_path, "TOKENS", tokens)
+            set_key(dotenv_path, "USERNAMES", usernames)
+
+            print(f'TOKENS atualizado em {dotenv_path}: {tokens}')
+            print(f'USERNAMES atualizado em {dotenv_path}: {usernames}')
+        else:
+            print('.env file not found')
+
+# Adicionando funções para obter issues, branches e PRs
+
+    
