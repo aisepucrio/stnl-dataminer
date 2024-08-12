@@ -3,6 +3,7 @@ import threading
 from controller.jira_controller import JiraController
 from view.base_view import BaseView
 from PIL import Image
+import os
 
 # Classe para a aplicação de mineração de dados do Jira
 class JiraApp(BaseView):
@@ -16,8 +17,19 @@ class JiraApp(BaseView):
         self.url_entry.insert(0, "https://spark-project.atlassian.net/jira/software/c/projects/SPARK/issues")
 
         # Botão para carregar tipos de issues adicionais (com ícone, se disponível)
-        #self.load_issues_icon = ctk.CTkImage(light_image=Image.open(r"view/icons/close.png"), size=(20, 20))
-        self.load_issues_button = ctk.CTkButton(self, text="", command=self.load_issue_types, width=25, height=25) # Adicionar image=self.load_issues_icon
+        # Construir o caminho absoluto ou relativo correto
+        print("Current Working Directory:", os.getcwd())  # Adicione isso para verificar o diretório de trabalho atual
+        icon_path = os.path.join(os.path.dirname(__file__), "icons", "load_issues_icon.png")
+        print(f"Icon path: {icon_path}")  # Adicione isso para verificar o caminho do ícone
+
+        # Carregue a imagem
+        try:
+            self.load_issues_icon = ctk.CTkImage(light_image=Image.open(icon_path), size=(20, 20))
+        except Exception as e:
+            print(f"Erro ao carregar a imagem: {e}")
+            self.load_issues_icon = None
+
+        self.load_issues_button = ctk.CTkButton(self, text="", command=self.load_issue_types, width=28, height=28) # Adicionar image=self.load_issues_icon
         self.load_issues_button.grid(row=2, column=1, padx=(5, 10), pady=7, sticky='e')
 
         # Adiciona opções de mineração específicas do Jira
