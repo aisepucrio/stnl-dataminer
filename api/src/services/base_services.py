@@ -13,6 +13,9 @@ class BaseAPI:
     def load_env(self):
         load_dotenv()
 
+    def get_save_path(self):
+        return os.getenv('SAVE_PATH')
+
     # Método para salvar dados em formato JSON
     def save_to_json(self, data, filename):
         save_path = self.get_save_path()
