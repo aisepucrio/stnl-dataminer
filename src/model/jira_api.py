@@ -63,10 +63,12 @@ class JiraAPI(BaseAPI):
             unique_issuetypes = {}
             for issuetype in issuetypes:
                 name = issuetype.get('name')
+                print(f"Name: {name}")
                 untranslated_name = issuetype.get('untranslatedName')
+                print(f"Untranslated Name: {untranslated_name}")
                 if name and untranslated_name and name not in unique_issuetypes:
                     unique_issuetypes[name] = untranslated_name
-            
+                print(f"Unique: {unique_issuetypes}")
             return unique_issuetypes
         except requests.exceptions.RequestException as e:
             print(f"Erro ao conectar: {e}")

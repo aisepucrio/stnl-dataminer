@@ -2,8 +2,6 @@ import customtkinter as ctk
 import threading
 from controller.jira_controller import JiraController
 from view.base_view import BaseView
-from PIL import Image
-import os
 
 # Classe para a aplicação de mineração de dados do Jira
 class JiraApp(BaseView):
@@ -12,27 +10,24 @@ class JiraApp(BaseView):
         self.controller = JiraController(self)
         self.center_window()
 
+        # Inicializa com as opções de mineração padrão
+        self.init_default_mining_options()
+
+        # Inicializar variável para a URL
+        self.last_url = ""
+
+        # Inicializar variável para os tipos de issues
+        self.last_issuetypes = {}
+
+        # Iniciar monitoramento da URL
+        self.monitor_url()
+
         # Definir valor padrão para o campo de entrada de URL
         #self.url_entry.insert(0, "https://stone-puc.atlassian.net/jira/software/c/projects/CSTONE/boards/3?isInsightsOpen=true")
         self.url_entry.insert(0, "https://spark-project.atlassian.net/jira/software/c/projects/SPARK/issues")
 
-        # Botão para carregar tipos de issues adicionais (com ícone, se disponível)
-        # Construir o caminho absoluto ou relativo correto
-        print("Current Working Directory:", os.getcwd())  # Adicione isso para verificar o diretório de trabalho atual
-        icon_path = os.path.join(os.path.dirname(__file__), "icons", "load_issues_icon.png")
-        print(f"Icon path: {icon_path}")  # Adicione isso para verificar o caminho do ícone
-
-        # Carregue a imagem
-        try:
-            self.load_issues_icon = ctk.CTkImage(light_image=Image.open(icon_path), size=(20, 20))
-        except Exception as e:
-            print(f"Erro ao carregar a imagem: {e}")
-            self.load_issues_icon = None
-
-        self.load_issues_button = ctk.CTkButton(self, text="", command=self.load_issue_types, width=28, height=28) # Adicionar image=self.load_issues_icon
-        self.load_issues_button.grid(row=2, column=1, padx=(5, 10), pady=7, sticky='e')
-
-        # Adiciona opções de mineração específicas do Jira
+    def init_default_mining_options(self):
+        # Inicializa switches padrão
         self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
         self.epics_switch.grid(row=0, column=0, padx=20, pady=5, sticky='w')
         self.user_stories_switch = ctk.CTkSwitch(self.mining_options_frame, text="User Stories", font=self.default_font)
@@ -44,36 +39,30 @@ class JiraApp(BaseView):
         self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bugs", font=self.default_font)
         self.bugs_switch.grid(row=4, column=0, padx=20, pady=5, sticky='w')
 
-        # Frame para os tipos de issue adicionais
-        self.additional_issues_label = ctk.CTkLabel(self.additional_issues_frame, text="Additional Task Types", font=self.default_font)
-        self.additional_issues_label.grid(row=0, column=0, padx=10, pady=5, sticky='w')
-
-        # Lista para armazenar os estados dos CTkCheckBox
-        self.additional_issues_vars = []
-
-    # Função para carregar tipos de issues adicionais
-    def load_issue_types(self):
-        url = self.url_entry.get()
-        issue_types = self.controller.load_issue_types(url)
-        standard_types = ['Epic', 'Story', 'Task', 'Sub-task', 'Bug']
-        additional_types = [untranslated_name for translated_name, untranslated_name in issue_types.items() if untranslated_name not in standard_types]
-        
-        print(f"Additional types: {additional_types}")  # Debug statement
-
-        # Limpa o frame antes de adicionar novos itens
-        for widget in self.additional_issues_frame.winfo_children():
+    def update_mining_options(self, issue_types):
+        # Limpar os switches existentes
+        for widget in self.mining_options_frame.winfo_children():
             widget.destroy()
-        self.additional_issues_vars.clear()
 
-        for item in additional_types:
-            var = ctk.StringVar(value=item)
-            chk = ctk.CTkCheckBox(self.additional_issues_frame, text=item, variable=var, onvalue=item, offvalue='')
-            chk.pack(anchor='w', padx=10, pady=5)
-            self.additional_issues_vars.append(var)
+        # Recriar switches para todos os tipos disponíveis no projeto
+        row_index = 0
+        for translated_name, untranslated_name in issue_types.items():
+            switch = ctk.CTkSwitch(self.mining_options_frame, text=untranslated_name, font=self.default_font)
+            switch.grid(row=row_index, column=0, padx=20, pady=5, sticky='w')
+            row_index += 1
 
-    # Função para obter os itens selecionados no CTkCheckBox
-    def get_selected_additional_task_types(self):
-        return [var.get() for var in self.additional_task_types_vars if var.get()]
+    def monitor_url(self):
+        # Monitora a URL e tenta carregar os tipos de issues se for válida
+        current_url = self.url_entry.get()
+        if current_url != self.last_url:
+            self.last_url = current_url  
+            jira_domain, project_key = self.controller.api.extract_jira_domain_and_key(current_url)
+            if jira_domain and project_key:
+                issuetypes = self.controller.load_issue_types(current_url)
+                if issuetypes != self.last_issuetypes:
+                    self.last_issuetypes = issuetypes
+                    self.update_mining_options(issuetypes)
+        self.after(3000, self.monitor_url)  # Verifica a URL a cada 3 segundo
 
     # Função para iniciar a mineração de dados
     def mine_data(self):
