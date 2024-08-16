@@ -71,30 +71,21 @@ class JiraApp(BaseView):
         end_date = self.end_date_entry.get_date()
 
         task_types = []
-        if self.epics_switch.get() == 1:
-            task_types.append('Epic')
-        if self.user_stories_switch.get() == 1:
-            task_types.append('Story')
-        if self.tasks_switch.get() == 1:
-            task_types.append('Task')
-        if self.subtasks_switch.get() == 1:
-            task_types.append('Sub-task')
-        if self.bugs_switch.get() == 1:
-            task_types.append('Bug')
-
-        additional_task_types = self.get_selected_additional_task_types()
-        print(f"Additional task types: {additional_task_types}")
+        for widget in self.mining_options_frame.winfo_children():
+            if isinstance(widget, ctk.CTkSwitch):
+                if widget.get() == 1:
+                    task_types.append(widget.cget("text"))
 
         # Função para coletar dados em uma thread separada
         def collect_data():
             try:
                 self.result_label.configure(text="Retrieving information, please wait...")
 
-                total_tasks = len(task_types) + len(additional_task_types)
+                total_tasks = len(task_types)
                 self.progress_bar.set(0)
                 progress_step = 1 / total_tasks if total_tasks > 0 else 1
 
-                data = self.controller.mine_data(url, start_date, end_date, task_types, additional_task_types, self.update_progress, progress_step)
+                data = self.controller.mine_data(url, start_date, end_date, task_types, self.update_progress, progress_step)
                 if data is None:
                     self.result_label.configure(text="Process stopped by the user.")
                     return

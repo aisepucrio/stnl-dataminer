@@ -33,7 +33,16 @@ class JiraAPI(BaseAPI):
         parsed_url = urlparse(url)
         domain = parsed_url.netloc
         path_parts = parsed_url.path.split('/')
-        project_key = path_parts[path_parts.index('projects') + 1] if 'projects' in path_parts else None
+        
+        project_key = None
+        
+        if 'projects' in path_parts:
+            # Caso da URL 1 e URL 2
+            project_key = path_parts[path_parts.index('projects') + 1]
+        elif 'browse' in path_parts:
+            # Caso da URL 3
+            project_key = path_parts[path_parts.index('browse') + 1].split('-')[0]
+        
         return domain, project_key
 
     # Busca campos customizados do Jira
@@ -63,12 +72,12 @@ class JiraAPI(BaseAPI):
             unique_issuetypes = {}
             for issuetype in issuetypes:
                 name = issuetype.get('name')
-                print(f"Name: {name}")
+                #print(f"Name: {name}")
                 untranslated_name = issuetype.get('untranslatedName')
-                print(f"Untranslated Name: {untranslated_name}")
+                #print(f"Untranslated Name: {untranslated_name}")
                 if name and untranslated_name and name not in unique_issuetypes:
                     unique_issuetypes[name] = untranslated_name
-                print(f"Unique: {unique_issuetypes}")
+                #print(f"Unique: {unique_issuetypes}")
             return unique_issuetypes
         except requests.exceptions.RequestException as e:
             print(f"Erro ao conectar: {e}")
