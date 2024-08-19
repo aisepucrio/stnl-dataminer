@@ -9,6 +9,7 @@ class GitHubAPI:
 
     def __init__(self):
         self.start_uvicorn_server()
+        pass
 
     @property
     def BASE_URL(self):
@@ -140,13 +141,13 @@ class GitHubAPI:
 
     def get_commits(self, repo_name="aisepucrio/stnl-dataminer", start_date="2023-01-01", end_date="2024-07-31"):
         try:
-            print(f'Getting commits from {repo_name} from {start_date} to {end_date}')
+            print(f'\nGetting commits from {repo_name} from {start_date} to {end_date}\n')
             repo_name = repo_name.replace("/", "_")
             response = requests.get(f"{self.BASE_URL}/get-commits/{repo_name}/{start_date}/{end_date}")
             if response.status_code == 200:
                 load_dotenv()
                 save_path = os.getenv("SAVE_PATH")
-                print(f'Commits saved in {save_path}')
+                print(f'\nCommits saved in {save_path}\n')
                 return response.json()
             else:
                 print(f"Error: {response.text}")
@@ -155,13 +156,13 @@ class GitHubAPI:
 
     def get_branches(self, repo_name="aisepucrio/stnl-dataminer"):
         try:
-            print(f'Getting branches from {repo_name}')
+            print(f'\nGetting branches from {repo_name}\n')
             repo_name = repo_name.replace("/", "_")
             response = requests.get(f"{self.BASE_URL}/get-branches/{repo_name}")
             if response.status_code == 200:
                 load_dotenv()
                 save_path = os.getenv("SAVE_PATH")
-                print(f'Branches saved in {save_path} as {repo_name}_branches.json')
+                print(f'\nBranches saved in {save_path} as {repo_name}_branches.json\n')
                 return response.json()
             else:
                 print(f"Error: {response.text}")
@@ -170,13 +171,13 @@ class GitHubAPI:
 
     def get_pull_requests(self, repo_name="aisepucrio/stnl-dataminer", start_date="2023-01-01", end_date="2024-07-31"):
         try:
-            print(f'Getting pull requests from {repo_name} from {start_date} to {end_date}')
+            print(f'\nGetting pull requests from {repo_name} from {start_date} to {end_date}\n')
             repo_name = repo_name.replace("/", "_")
             response = requests.get(f"{self.BASE_URL}/get-pull-requests/{repo_name}/{start_date}/{end_date}")
             if response.status_code == 200:
                 load_dotenv()
                 save_path = os.getenv("SAVE_PATH")
-                print(f'Pull requests saved in {save_path} as {repo_name}_pull_requests.json')
+                print(f'\nPull requests saved in {save_path} as {repo_name}_pull_requests.json\n')
                 return response.json()
             else:
                 print(f"Error: {response.text}")
@@ -185,13 +186,13 @@ class GitHubAPI:
 
     def get_issues(self, repo_name="aisepucrio/stnl-dataminer", start_date="2023-01-01", end_date="2024-07-31"):
         try:
-            print(f'Getting issues from {repo_name} from {start_date} to {end_date}')
+            print(f'\nGetting issues from {repo_name} from {start_date} to {end_date}\n')
             repo_name = repo_name.replace("/", "_")
             response = requests.get(f"{self.BASE_URL}/get-issues/{repo_name}/{start_date}/{end_date}")
             if response.status_code == 200:
                 load_dotenv()
                 save_path = os.getenv("SAVE_PATH")
-                print(f'Issues saved in {save_path} as {repo_name}_issues.json')
+                print(f'\nIssues saved in {save_path} as {repo_name}_issues.json\n')
                 return response.json()
             else:
                 print(f"Error: {response.text}")

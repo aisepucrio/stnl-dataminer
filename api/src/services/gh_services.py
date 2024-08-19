@@ -463,8 +463,8 @@ class GitHubAPI(BaseAPI):
 
     # Função para clonar o repositório
     def clone_repo(self, repo_url, clone_path):
-        if self.view:
-            self.view.show_temp_message("Please wait while cloning the repository...")
+        
+        print(f'\nCloning repo: {repo_url}\n')
         
         Repo.clone_from(repo_url, clone_path, progress=CloneProgress())
         if self.view:
