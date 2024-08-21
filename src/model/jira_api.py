@@ -67,21 +67,26 @@ class JiraAPI(BaseAPI):
             response = requests.get(url, headers=headers, auth=HTTPBasicAuth(email, api_token))
             response.raise_for_status()  # Lança uma exceção para códigos de status HTTP de erro
             issuetypes = response.json()
+            #print(f"Issue Types: {issuetypes}")
             
-            # Filtra e remove duplicados com base no campo `name`
+            # Filtra e remove duplicados com base no campo `untranslatedName`
             unique_issuetypes = {}
             for issuetype in issuetypes:
                 name = issuetype.get('name')
-                #print(f"Name: {name}")
                 untranslated_name = issuetype.get('untranslatedName')
+                #print(f"Name: {name}")
                 #print(f"Untranslated Name: {untranslated_name}")
-                if name and untranslated_name and name not in unique_issuetypes:
-                    unique_issuetypes[name] = untranslated_name
-                #print(f"Unique: {unique_issuetypes}")
+                
+                if name and untranslated_name:
+                    if untranslated_name not in unique_issuetypes or unique_issuetypes.get(untranslated_name) != name:
+                        unique_issuetypes[name] = untranslated_name
+            
+            print(f"Unique: {unique_issuetypes}")
             return unique_issuetypes
         except requests.exceptions.RequestException as e:
             print(f"Erro ao conectar: {e}")
             return None
+
 
     # Coleta tarefas do Jira
     def collect_tasks(self, jira_domain, project_key, task_type, start_date, end_date, stop_collecting):

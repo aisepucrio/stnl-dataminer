@@ -28,25 +28,25 @@ class JiraApp(BaseView):
 
     def init_default_mining_options(self):
         # Inicializa switches padrão
-        self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epics", font=self.default_font)
+        self.epics_switch = ctk.CTkSwitch(self.mining_options_frame, text="Epic", font=self.default_font)
         self.epics_switch.grid(row=0, column=0, padx=20, pady=5, sticky='w')
-        self.user_stories_switch = ctk.CTkSwitch(self.mining_options_frame, text="User Stories", font=self.default_font)
+        self.user_stories_switch = ctk.CTkSwitch(self.mining_options_frame, text="Story", font=self.default_font)
         self.user_stories_switch.grid(row=1, column=0, padx=20, pady=5, sticky='w')
-        self.tasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Tasks", font=self.default_font)
+        self.tasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Task", font=self.default_font)
         self.tasks_switch.grid(row=2, column=0, padx=20, pady=5, sticky='w')
-        self.subtasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Sub-tasks", font=self.default_font)
+        self.subtasks_switch = ctk.CTkSwitch(self.mining_options_frame, text="Sub-task", font=self.default_font)
         self.subtasks_switch.grid(row=3, column=0, padx=20, pady=5, sticky='w')
-        self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bugs", font=self.default_font)
+        self.bugs_switch = ctk.CTkSwitch(self.mining_options_frame, text="Bug", font=self.default_font)
         self.bugs_switch.grid(row=4, column=0, padx=20, pady=5, sticky='w')
 
-    def update_mining_options(self, issue_types):
+    def update_mining_options(self, issuetypes):
         # Limpar os switches existentes
         for widget in self.mining_options_frame.winfo_children():
             widget.destroy()
 
         # Recriar switches para todos os tipos disponíveis no projeto
         row_index = 0
-        for translated_name, untranslated_name in issue_types.items():
+        for translated_name, untranslated_name in issuetypes.items():
             switch = ctk.CTkSwitch(self.mining_options_frame, text=untranslated_name, font=self.default_font)
             switch.grid(row=row_index, column=0, padx=20, pady=5, sticky='w')
             row_index += 1

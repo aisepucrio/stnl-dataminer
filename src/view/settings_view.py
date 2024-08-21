@@ -100,7 +100,7 @@ class SettingsApp(ctk.CTk):
         self.github_user_entry.grid(row=1, column=1, padx=10, pady=10)
 
         # Email da API
-        self.api_email_label = ctk.CTkLabel(self, text="API Email:")
+        self.api_email_label = ctk.CTkLabel(self, text="Jira Email:")
         self.api_email_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
 
         self.api_email_entry = ctk.CTkEntry(self, width=200)
@@ -113,7 +113,7 @@ class SettingsApp(ctk.CTk):
         self.api_email_edit_button.grid(row=2, column=3, padx=10, pady=10)
 
         # Token da API
-        self.api_token_label = ctk.CTkLabel(self, text="API Token:")
+        self.api_token_label = ctk.CTkLabel(self, text="Jira Token:")
         self.api_token_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
 
         self.api_token_entry = ctk.CTkEntry(self, width=200)
