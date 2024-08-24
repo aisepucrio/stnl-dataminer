@@ -66,3 +66,22 @@ python main.py
 5. Após inserir e clicar em "Add", você pode fechar a janela e selecionar a plataforma que deseja utilizar no framework.
 
 **Observação:** Para o funcionamento ideal do framework, é recomendado que tenha pelo menos 2 tokens.
+
+### Passo Opcional: Instalação do Tkinter
+
+Em algumas distribuições Linux e no macOS, o Tkinter pode precisar ser instalado separadamente, usando o sistema de pacotes do sistema e não pelo `pip`. Para instalar o Tkinter, siga os comandos específicos da sua distribuição:
+
+- **Ubuntu/Debian:**
+  ```bash
+  sudo apt-get install python3-tk
+  ```
+
+- **Fedora:**
+  ```bash
+  sudo dnf install python3-tkinter
+  ```
+
+- **macOS (via Homebrew):**
+  ```bash
+  brew install python-tk
+  ```
